@@ -1,0 +1,174 @@
+=pod
+
+=head1 NAME
+
+Context::Singleton - handles context specific singletons
+
+=head1 DESCRIPTION
+
+=head2 What is context specific singletons?
+
+As your workflow handles its tasks, granularity become finer and certain
+entities behaves like singletons.
+
+Nice example is user id/object after successful authentication.
+Its value is constant for every function/method called after it is known
+but is unknown and can represents millions of users.
+
+=head2 How it differs from Multiton pattern?
+
+Multiton is set of singletons (global variable) whereas Context::Singleton
+provides context scope.
+
+=head2 Doesn't C<local> already provide same behaviour?
+
+Context::Singleton doesn't provide only localized scope.
+
+It provides immutability on scope and can build values based on dependencies.
+With dependency tracking it can rebuild them in inner scope in case their
+dependencies were modified.
+
+=head1 EXPORTED FUNCTIONS
+
+=head2 Terms
+
+=head3 resource
+
+Singleton idenfication, string, global.
+
+=head3 receipt
+
+Rule specifies how to build value
+
+  contrive 'resource' => ( ... );
+
+There can me multiple receipts how to build C<singleton value>.
+One with most precious dependencies (proclaimed in deepest frame) is used.
+If there are more, first defined is used.
+
+Refer L<#contrive> for more.
+
+=head3 frame
+
+Frame represents hierarchy.
+
+Resource values are by default cached in top-most frame providing their
+dependencies.
+
+It destroys cached values on leaving context.
+
+=head1 EXPORTED FUNCTIONS
+
+Context singleton exports following function by default.
+
+=head2 frame CODE
+
+   frame {
+      ...;
+   }
+
+Creates new frame. It's argument behaves like function and it returns its
+return value. It preserves list/scalar context when calling CODE.
+
+=head2 proclaim resource => value, ...;
+
+   proclaim resource => value;
+   proclaim resource => value, resource2 => value2;
+
+Define value of resource in current context.
+
+Value in one frame can be defined only once.
+
+Returns value of last resource
+
+=head2 deduce
+
+   my $var = deduce 'resource';
+
+Make and return resource value available in current frame.
+
+If resource value is not available tries to build it using known receipts
+or looks into parent frames (using deepest = best).
+
+=head2 load_path
+
+  load_path 'prefix-1', ...;
+
+Evaluate all modules within given module prefixes.
+Every prefix is evaluated only once.
+
+=head2 contrive
+
+Defines new receipt how to build resource value
+
+  contrive 'name' => (
+     class => 'Foo::Bar',
+     deduce => 'rule_object',
+     builder => 'new',
+     default => { rule_1 => 'v1', ... },
+     dep => [ 'rule_2', ... ],
+     dep => { param_a => 'rule_1', ... },
+     as => sub { ... },
+     value => 10,
+  );
+
+=over
+
+=item value
+
+Simplest rule, use constant value.
+
+=item as
+
+Defines code used to build resource value. Dependencies are passed as arguments.
+
+=item class
+
+Calls builder method with dependencies on this class to get value.
+Automatically creates rule with class name with default builder providing dynamic load.
+
+Acts like
+
+   eval "use $class";
+   $class->$builder (@deps);
+
+=item deduce
+
+Calls builder method with dependencies on object provided by specified rule.
+
+=item builder
+
+Defaults to C<new>, specifies method name to call on C<class>/C<deduce>
+
+=item default
+
+Default values of dependencies. If used they are treated as resolved in root context but
+not stored nor cached anywhere.
+
+Default values are treated as resolved in root frame.
+
+=item dep
+
+Dependencies required to deduce this rule.
+
+Two forms are recognized at the moment:
+
+=over
+
+=item ARRAYREF
+
+List of required rules, passed as list to builder function
+
+=item HASHREF
+
+Hash values are treated as rule names. Passed as list of named parameters to builder function.
+
+=back
+
+=back
+
+=head1 TUTORIAL
+
+See short tutorial L<Context::Singleton::Tutorial>
+
+=cut
