@@ -94,8 +94,9 @@ sub _build_builder_promise_for {
     my %required = map +($_ => 1), $builder->required;
     delete @required{ keys %optional };
 
-    $promise->add_dependencies ($self->_search_promise_for ($_))
-        for keys %required;
+    $promise->add_dependencies (
+        map $self->_search_promise_for ($_), keys %required
+    );
 
     $promise->set_deducible (0) unless keys %required;
 
