@@ -18,7 +18,7 @@ my %module_build_args = (
     "Branislav Zahradn\x{ed}k <barney\@cpan.org>"
   ],
   "dist_name" => "Context-Singleton",
-  "dist_version" => "1.0.0",
+  "dist_version" => "1.0.1",
   "license" => "artistic_2",
   "module_name" => "Context::Singleton",
   "recursive_test_files" => 1,
@@ -41,34 +41,26 @@ my %module_build_args = (
     "warnings" => 0
   },
   "test_requires" => {
-    "Data::Printer" => 0,
     "Exporter" => 0,
-    "FindBin" => 0,
     "Hash::Util" => 0,
     "Sub::Override" => 0,
     "Sub::Uplevel" => 0,
     "Test::Deep" => 0,
-    "Test::Deep::Cmp" => 0,
     "Test::Exception" => 0,
-    "Test::More" => "0.94",
-    "lib" => 0
+    "Test::More" => "0.94"
   }
 );
 
 
 my %fallback_build_requires = (
-  "Data::Printer" => 0,
   "Exporter" => 0,
-  "FindBin" => 0,
   "Hash::Util" => 0,
   "Module::Build" => "0.28",
   "Sub::Override" => 0,
   "Sub::Uplevel" => 0,
   "Test::Deep" => 0,
-  "Test::Deep::Cmp" => 0,
   "Test::Exception" => 0,
-  "Test::More" => "0.94",
-  "lib" => 0
+  "Test::More" => "0.94"
 );
 
 

@@ -5,7 +5,7 @@ use feature 'state';
 
 package Context::Singleton;
 
-our $VERSION = v1.0.0;
+our $VERSION = v1.0.1;
 
 use Sub::Install qw();
 use Sub::Name qw();
