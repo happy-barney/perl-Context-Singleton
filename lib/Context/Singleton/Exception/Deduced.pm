@@ -9,9 +9,9 @@ our $VERSION = v1.0.2;
 use Exception::Class ( __PACKAGE__ );
 
 sub new {
-    my ($self, $rule) = @_;
+	my ($self, $rule) = @_;
 
-    $self->SUPER::new (error => "Already deduced: $rule");
+	$self->SUPER::new (error => "Already deduced: $rule");
 }
 
 1;

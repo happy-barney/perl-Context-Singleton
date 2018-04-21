@@ -9,15 +9,15 @@ our $VERSION = v1.0.2;
 use parent qw[ Context::Singleton::Frame::Builder::Base ];
 
 sub new {
-    my ($class, %def) = @_;
+	my ($class, %def) = @_;
 
-    return $class->SUPER::new( value => $def{value} );
+	return $class->SUPER::new (value => $def{value});
 }
 
 sub build {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    return $self->{value};
+	return $self->{value};
 }
 
 1;

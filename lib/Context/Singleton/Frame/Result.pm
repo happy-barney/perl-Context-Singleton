@@ -9,26 +9,26 @@ our $VERSION = v1.0.2;
 use Scalar::Util qw[];
 
 sub new {
-    my ($class, $resolver, $value) = @_;
-    my $self = bless {
-        resolver => $resolver,
-        value    => $value,
-    };
+	my ($class, $resolver, $value) = @_;
+	my $self = bless {
+		resolver => $resolver,
+		value    => $value,
+	};
 
-    die "Oops"
-        unless $resolver->isa ('Context::Singleton::Frame');
+	die "Oops"
+		unless $resolver->isa ('Context::Singleton::Frame');
 
-    Scalar::Util::weaken ($self->{resolver});
+	Scalar::Util::weaken ($self->{resolver});
 
-    return $self;
+	return $self;
 }
 
 sub resolver {
-    $_[0]->{resolver};
+	$_[0]->{resolver};
 }
 
 sub value {
-    $_[0]->{value};
+	$_[0]->{value};
 }
 
 1;
