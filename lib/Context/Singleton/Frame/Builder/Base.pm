@@ -11,11 +11,7 @@ use List::MoreUtils;
 sub new {
 	my ($class, %params) = @_;
 
-	$params{this} = $params{class} // $params{deduce};
 	$params{default} //= {};
-
-	delete $params{class};
-	delete $params{deduce};
 
 	my $self = bless \%params, $class;
 

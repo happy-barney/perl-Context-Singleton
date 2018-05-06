@@ -41,9 +41,9 @@ describe 'build ()' => as {
 		return;
 	};
 
-	context "with class builder" => as {
+	context "with method builder" => as {
 		build_instance [
-			class => $EXAMPLE_CLASS,
+			this    => $EXAMPLE_CLASS,
 			builder => 'new',
 		];
 
@@ -56,24 +56,9 @@ describe 'build ()' => as {
 		return;
 	};
 
-	context 'with instance builder' => as {
-		build_instance [
-			deduce => $EXAMPLE_DEDUCE,
-			builder => 'method',
-		];
-
-		plan tests => 1;
-
-		expect_build      expect => [ obj_isa ($SAMPLE_BUILDER), 'Foo', 'Bar' ],
-			with_deduced => with_deduced,
-			;
-
-		return;
-	};
-
 	context 'with class::method builder' => as {
 		build_instance [
-			class  => $EXAMPLE_CLASS,
+			this   => $EXAMPLE_CLASS,
 			call   => 'method',
 		];
 
@@ -108,9 +93,9 @@ describe "Builtin::Deps" => as {
 		return;
 	};
 
-	context 'with class, defaults, and deps' => as {
+	context 'with this, defaults, and deps' => as {
 		build_instance [
-			class => $EXAMPLE_CLASS,
+			this => $EXAMPLE_CLASS,
 			builder => 'new',
 			dep => [ 'some', 'deps' ],
 			default => { bar => 10 },
@@ -129,9 +114,9 @@ describe "Builtin::Deps" => as {
 		return;
 	};
 
-	context 'with deduce' => as {
+	context 'with this' => as {
 		build_instance [
-			deduce => $EXAMPLE_DEDUCE,
+			this => $EXAMPLE_DEDUCE,
 			builder => 'method',
 		];
 
@@ -148,11 +133,10 @@ describe "Builtin::Deps" => as {
 		return;
 	};
 
-	context 'with class, (ignored) deduce, and default' => as {
+	context 'with this and default' => as {
 		build_instance [
-			class  => $EXAMPLE_CLASS,
+			this  => $EXAMPLE_CLASS,
 			call   => 'method',
-			deduce => $EXAMPLE_DEDUCE,
 			default => { foo => 1, bar => 2 },
 		];
 

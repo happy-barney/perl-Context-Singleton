@@ -52,9 +52,9 @@ describe 'Builder::Hash' => as {
 			return;
 		};
 
-		context "with class" => sub {
+		context "with this" => sub {
 			build_instance [
-				class => $EXAMPLE_CLASS,
+				this => $EXAMPLE_CLASS,
 				dep => { },
 			];
 
@@ -64,24 +64,6 @@ describe 'Builder::Hash' => as {
 			expect_unresolved expect => [ $EXAMPLE_CLASS ];
 			expect_dep        expect => { };
 			expect_build_args expect => [ $SAMPLE_BUILDER ],
-				with_deduced => { with_deduced },
-				;
-
-			return;
-		};
-
-		context "with deduce" => sub {
-			build_instance [
-				deduce => $EXAMPLE_DEDUCE,
-				dep => { },
-			];
-
-			plan tests => 4;
-
-			expect_required   expect => [ $EXAMPLE_DEDUCE ];
-			expect_unresolved expect => [ $EXAMPLE_DEDUCE ];
-			expect_dep        expect => { };
-			expect_build_args expect => [ obj_isa ($SAMPLE_BUILDER) ],
 				with_deduced => { with_deduced },
 				;
 
@@ -109,37 +91,18 @@ describe 'Builder::Hash' => as {
 			return;
 		};
 
-		return;
-		context "with class" => sub {
+		context "with this" => sub {
 			build_instance [
-				class => $EXAMPLE_CLASS,
-				dep => { 'foo', 'bar' },
+				this => $EXAMPLE_CLASS,
+				dep => { a => 'foo', b => 'bar' },
 			];
 
 			plan tests => 4;
 
 			expect_required   expect => [ $EXAMPLE_CLASS, 'foo', 'bar' ];
 			expect_unresolved expect => [ $EXAMPLE_CLASS, 'foo', 'bar' ];
-			expect_dep        expect => { 'foo', 'bar' };
-			expect_build_args expect => [ $SAMPLE_BUILDER, 'Foo', 'Bar' ],
-				with_deduced => { with_deduced },
-				;
-
-			return;
-		};
-
-		context "with deduce" => sub {
-			build_instance [
-				deduce => $EXAMPLE_DEDUCE,
-				dep => { 'foo', 'bar' },
-			];
-
-			plan tests => 4;
-
-			expect_required   expect => [ $EXAMPLE_DEDUCE, 'foo', 'bar' ];
-			expect_unresolved expect => [ $EXAMPLE_DEDUCE, 'foo', 'bar' ];
-			expect_dep        expect => { 'foo', 'bar' };
-			expect_build_args expect => [ obj_isa ($SAMPLE_BUILDER), 'Foo', 'Bar' ],
+			expect_dep        expect => { a => 'foo', b => 'bar' };
+			expect_build_args expect => build_args ($SAMPLE_BUILDER, a => 'Foo', b => 'Bar'),
 				with_deduced => { with_deduced },
 				;
 
@@ -149,14 +112,6 @@ describe 'Builder::Hash' => as {
 		return;
 	};
 	return;
-};
-
-
-it "should pass" => as {
-	cmp_deeply(
-		[ xxx => foo => 'bar' ],
-		build_args (xxx => foo => 'bar'),
-	);
 };
 
 done_testing;

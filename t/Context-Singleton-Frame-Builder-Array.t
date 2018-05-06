@@ -48,9 +48,9 @@ describe 'Builder::Array' => as {
 			return;
 		};
 
-		context "with class" => sub {
+		context "with this" => sub {
 			build_instance [
-				class => $EXAMPLE_CLASS,
+				this => $EXAMPLE_CLASS,
 				dep => [ ],
 			];
 
@@ -60,24 +60,6 @@ describe 'Builder::Array' => as {
 			expect_unresolved expect => [ $EXAMPLE_CLASS ];
 			expect_dep        expect => [ ];
 			expect_build_args expect => [ $SAMPLE_BUILDER ],
-				with_deduced => { with_deduced },
-				;
-
-			return;
-		};
-
-		context "with deduce" => sub {
-			build_instance [
-				deduce => $EXAMPLE_DEDUCE,
-				dep => [ ],
-			];
-
-			plan tests => 4;
-
-			expect_required   expect => [ $EXAMPLE_DEDUCE ];
-			expect_unresolved expect => [ $EXAMPLE_DEDUCE ];
-			expect_dep        expect => [ ];
-			expect_build_args expect => [ obj_isa ($SAMPLE_BUILDER) ],
 				with_deduced => { with_deduced },
 				;
 
@@ -105,9 +87,9 @@ describe 'Builder::Array' => as {
 			return;
 		};
 
-		context "with class" => sub {
+		context "with this" => sub {
 			build_instance [
-				class => $EXAMPLE_CLASS,
+				this => $EXAMPLE_CLASS,
 				dep => [ 'foo', 'bar' ],
 			];
 
@@ -117,24 +99,6 @@ describe 'Builder::Array' => as {
 			expect_unresolved expect => [ $EXAMPLE_CLASS, 'foo', 'bar' ];
 			expect_dep        expect => [ 'foo', 'bar' ];
 			expect_build_args expect => [ $SAMPLE_BUILDER, 'Foo', 'Bar' ],
-				with_deduced => { with_deduced },
-				;
-
-			return;
-		};
-
-		context "with deduce" => sub {
-			build_instance [
-				deduce => $EXAMPLE_DEDUCE,
-				dep => [ 'foo', 'bar' ],
-			];
-
-			plan tests => 4;
-
-			expect_required   expect => [ $EXAMPLE_DEDUCE, 'foo', 'bar' ];
-			expect_unresolved expect => [ $EXAMPLE_DEDUCE, 'foo', 'bar' ];
-			expect_dep        expect => [ 'foo', 'bar' ];
-			expect_build_args expect => [ obj_isa ($SAMPLE_BUILDER), 'Foo', 'Bar' ],
 				with_deduced => { with_deduced },
 				;
 

@@ -69,6 +69,12 @@ sub contrive {
 		$def{builder} //= 'new';
 	}
 
+	if ($def{class} // $def{deduce}) {
+		$def{this} = $def{class} // $def{deduce};
+		delete $def{class};
+		delete $def{deduce};
+	}
+
 	my $builder_class = $self->_guess_builder_class (\%def);
 	my $builder = $builder_class->new (%def);
 
