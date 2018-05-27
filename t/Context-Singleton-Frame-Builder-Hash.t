@@ -173,7 +173,6 @@ sub init {
 
 sub descend {
     my ($self, $got) = @_;
-    use Data::Printer;
     my @got_val = @$got;
     my $got_this = shift @got_val if @got_val % 2;
 
@@ -190,12 +189,6 @@ sub descend {
 
     $ok;
 }
-
-#sub diagnostics {
-#    my ($self, $where, $last) = @_;
-#
-#    $self->{cmp_diag};
-#}
 
 __END__
 
