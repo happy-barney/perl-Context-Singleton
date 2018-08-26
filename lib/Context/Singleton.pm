@@ -37,14 +37,14 @@ sub _by_frame_class_accessors {
 		};
 
 		+{
-			contrive      => sub { $current_frame->db->contrive (@_) },
+			contrive      => sub { $current_frame->contrive (@_) },
 			current_frame => sub { $current_frame },
 			deduce        => sub { $current_frame->deduce (@_) },
 			frame         => $frame,
 			is_deduced    => sub { $current_frame->is_deduced (@_) },
-			load_rules    => sub { $current_frame->db->load_rules (@_) },
+			load_rules    => sub { $current_frame->load_rules (@_) },
 			proclaim      => sub { $current_frame->proclaim (@_) },
-			trigger       => sub { $current_frame->db->trigger (@_) },
+			trigger       => sub { $current_frame->trigger (@_) },
 			try_deduce    => sub { $current_frame->try_deduce (@_) },
 		};
 	};

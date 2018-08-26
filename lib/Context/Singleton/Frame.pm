@@ -226,6 +226,14 @@ sub contrive {
     $self->db->contrive ($rule, @how);
 }
 
+sub load_rules {
+	shift->db->load_rules (@_);
+}
+
+sub trigger {
+	shift->db->trigger (@_);
+}
+
 sub deduce {
     my ($self, $rule, @proclaim) = @_;
 
