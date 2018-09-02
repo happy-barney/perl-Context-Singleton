@@ -4,7 +4,7 @@ use warnings;
 
 package Context::Singleton::Frame::Builder::Base;
 
-our $VERSION = v1.0.2;
+our $VERSION = v1.0.4;
 
 use List::MoreUtils;
 

@@ -4,7 +4,7 @@ use warnings;
 
 package Context::Singleton::Exception::Invalid;
 
-our $VERSION = v1.0.2;
+our $VERSION = v1.0.4;
 
 use Exception::Class ( __PACKAGE__ );
 

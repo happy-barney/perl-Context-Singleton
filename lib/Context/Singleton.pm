@@ -5,7 +5,7 @@ use feature 'state';
 
 package Context::Singleton;
 
-our $VERSION = v1.0.2;
+our $VERSION = v1.0.4;
 
 use parent 'Exporter::Tiny';
 
