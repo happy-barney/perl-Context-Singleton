@@ -37,6 +37,7 @@ my %module_build_args = (
     "namespace::clean" => 0,
     "overload" => 0,
     "parent" => 0,
+    "perl" => "5.010",
     "strict" => 0,
     "warnings" => 0
   },
