@@ -6,7 +6,7 @@ use feature 'state';
 
 package Context::Singleton::Frame::DB;
 
-our $VERSION = v1.0.4;
+our $VERSION = v1.0.5;
 
 use Class::Load;
 use Module::Pluggable::Object;
