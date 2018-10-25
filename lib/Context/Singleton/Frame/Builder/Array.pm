@@ -23,7 +23,7 @@ sub build_callback_args {
 
 	return (
 		$self->SUPER::build_callback_args ($resolved),
-		@$resolved{@{ $self->dep }},
+		@$resolved{@{ $self->dep // [] }},
 	);
 }
 
