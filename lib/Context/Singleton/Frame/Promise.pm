@@ -5,8 +5,6 @@ use warnings;
 
 package Context::Singleton::Frame::Promise;
 
-our $VERSION = v1.0.5;
-
 use Scalar::Util qw[ weaken ];
 
 use namespace::clean;

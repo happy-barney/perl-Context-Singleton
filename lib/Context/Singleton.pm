@@ -6,8 +6,6 @@ use feature 'state';
 
 package Context::Singleton;
 
-our $VERSION = v1.0.5;
-
 use parent 'Exporter::Tiny';
 
 use Sub::Install qw();

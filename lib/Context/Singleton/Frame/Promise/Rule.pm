@@ -4,8 +4,6 @@ use warnings;
 
 package Context::Singleton::Frame::Promise::Rule;
 
-our $VERSION = v1.0.5;
-
 use parent qw[ Context::Singleton::Frame::Promise ];
 
 sub new {

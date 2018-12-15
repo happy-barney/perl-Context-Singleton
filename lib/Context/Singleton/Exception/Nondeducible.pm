@@ -4,8 +4,6 @@ use warnings;
 
 package Context::Singleton::Exception::Nondeducible;
 
-our $VERSION = v1.0.5;
-
 use Exception::Class ( __PACKAGE__ );
 
 sub new {

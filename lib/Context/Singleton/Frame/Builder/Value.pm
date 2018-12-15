@@ -4,8 +4,6 @@ use warnings;
 
 package Context::Singleton::Frame::Builder::Value;
 
-our $VERSION = v1.0.5;
-
 use parent qw[ Context::Singleton::Frame::Builder::Base ];
 
 sub new {
