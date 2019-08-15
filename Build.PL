@@ -32,7 +32,6 @@ my %module_build_args = (
     "Ref::Util" => 0,
     "Scalar::Util" => 0,
     "Sub::Install" => 0,
-    "Variable::Magic" => 0,
     "feature" => 0,
     "namespace::clean" => 0,
     "overload" => 0,

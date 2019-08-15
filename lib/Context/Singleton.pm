@@ -9,7 +9,6 @@ package Context::Singleton;
 use parent 'Exporter::Tiny';
 
 use Sub::Install qw();
-use Variable::Magic qw();
 
 use Context::Singleton::Frame;
 
@@ -22,29 +21,19 @@ sub _by_frame_class_accessors {
 	state %cache;
 
 	return $cache{$frame_class} //= do {
-		my $current_frame = $frame_class->new;
-
-		my $restore_context_wizard = Variable::Magic::wizard
-			free => sub { $current_frame = $current_frame->parent; 1 },
-		;
-
-		my $frame = sub (&) {
-			Variable::Magic::cast my $guard => $restore_context_wizard;
-			$current_frame = $current_frame->new;
-
-			$_[0]->();
-		};
+		my $current_frame = "\$Context::Singleton::__::${frame_class}::current_frame";
+		eval "$current_frame = $frame_class->new";
 
 		+{
-			contrive      => sub { $current_frame->contrive (@_) },
-			current_frame => sub { $current_frame },
-			deduce        => sub { $current_frame->deduce (@_) },
-			frame         => $frame,
-			is_deduced    => sub { $current_frame->is_deduced (@_) },
-			load_rules    => sub { $current_frame->load_rules (@_) },
-			proclaim      => sub { $current_frame->proclaim (@_) },
-			trigger       => sub { $current_frame->trigger (@_) },
-			try_deduce    => sub { $current_frame->try_deduce (@_) },
+			contrive      => eval "sub { $current_frame->contrive (\@_) }",
+			current_frame => eval "sub { $current_frame }",
+			deduce        => eval "sub { $current_frame->deduce (\@_) }",
+			frame         => eval "sub (&) { local $current_frame = $current_frame->new; \$_[0]->(); };",
+			is_deduced    => eval "sub { $current_frame->is_deduced (\@_) }",
+			load_rules    => eval "sub { $current_frame->load_rules (\@_) }",
+			proclaim      => eval "sub { $current_frame->proclaim (\@_) }",
+			trigger       => eval "sub { $current_frame->trigger (\@_) }",
+			try_deduce    => eval "sub { $current_frame->try_deduce (\@_) }",
 		};
 	};
 }
