@@ -97,7 +97,7 @@ dependencies were modified.
 
 =head2 Terms
 
-=head3 resource
+=head3 rule
 
 Singleton idenfication, string, global.
 
@@ -105,7 +105,7 @@ Singleton idenfication, string, global.
 
 Rule specifies how to build value
 
-	contrive 'resource' => ( ... );
+	contrive 'rule' => ( ... );
 
 There can be multiple recipes for building a C<singleton value>.
 The one with most relevant dependencies (those proclaimed in the deepest frame)
@@ -136,24 +136,24 @@ Context singleton exports the following functions by default.
 Creates a new frame. Its argument behaves like a function and it returns its
 return value. It preserves list/scalar context when calling CODE.
 
-=head2 proclaim resource => value, ...;
+=head2 proclaim rule => value, ...;
 
-	proclaim resource => value;
-	proclaim resource => value, resource2 => value2;
+	proclaim rule => value;
+	proclaim rule => value, rule2 => value2;
 
-Define the value of a resource in the current context.
+Define the value of a rule in the current context.
 
-The resource's value in a given frame can be defined only once.
+The rule's value in a given frame can be defined only once.
 
-Returns the value of the last resource in the argument list.
+Returns the value of the last rule in the argument list.
 
 =head2 deduce
 
-	my $var = deduce 'resource';
+	my $var = deduce 'rule';
 
-Makes and returns a resource value available in current frame.
+Makes and returns a rule value available in current frame.
 
-If resource value is not available, it tries to build it using known recipes
+If rule value is not available, it tries to build it using known recipes
 or looks into parent frames (using deepest = best).
 
 =head2 load_path
@@ -165,7 +165,7 @@ Every prefix is evaluated only once.
 
 =head2 contrive
 
-Defines new receipt how to build resource value
+Defines new receipt how to build rule value
 
 	contrive 'name' => (
 		class => 'Foo::Bar',
@@ -186,7 +186,7 @@ Simplest rule, just constant value.
 
 =item as => CODEREF
 
-Defines code used to build resource value. Dependencies are passed as arguments.
+Defines code used to build rule value. Dependencies are passed as arguments.
 
 =item builder => method_name
 
@@ -203,6 +203,8 @@ Behaves essentially like
 
 	eval "use Class::Name";
 	Class::Name->$builder (@deps);
+
+See L<#Class Autoload">
 
 =item deduce => rule_name
 
@@ -238,6 +240,40 @@ Hash values are treated as rule names.
 Passed as a list of named parameters to the builder function.
 
 =back
+
+=back
+
+=head2 Class Autoload
+
+C<Context::Singleton> autoloads classes as part of class rule resolution.
+
+How it behaves:
+
+	deduce ('Context::Singleton::Class::Load')
+		->can (deduce ('Context::Singleton::Class::Load->load_class'))
+		->( $CLASS_TO_LOAD )
+
+Autoload is not used when class implementation is changed using C<proclaim>.
+In case you want it you have to invoke it manually:
+
+	proclaim 'Class::Foo', deduce ('Context::Singleton->load_class')->('My::Class::Foo');
+
+=head3 provided rules
+
+=over
+
+=item C<< Context::Singleton::Class::Load >>
+
+Default: L<Class::Load>
+
+=item C<< Context::Singleton::Class::Load->load_class >>
+
+Default: C<load_class>
+
+=item C<< Context::Singleton->load_class >>
+
+Coderef taking class name as an argument, loading it, and returing it on success
+or die otherwise
 
 =back
 

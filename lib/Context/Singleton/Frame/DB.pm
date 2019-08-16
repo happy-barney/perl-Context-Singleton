@@ -1,12 +1,13 @@
 
-use v5.10;
+use feature 'state';
+
 use strict;
 use warnings;
-use feature 'state';
 
 package Context::Singleton::Frame::DB;
 
-use Class::Load;
+use Moo;
+
 use Module::Pluggable::Object;
 use Ref::Util;
 
@@ -14,42 +15,62 @@ use Context::Singleton::Frame::Builder::Value;
 use Context::Singleton::Frame::Builder::Hash;
 use Context::Singleton::Frame::Builder::Array;
 
-sub new {
-	my ($class) = @_;
+has _rules      => (
+	is          => 'ro',
+	init_arg    => undef,
+	default     => sub { +{} },
+);
 
-	my $self = bless {
-		cache => {},
-		plugin => {},
-	}, $class;
+has _plugins    => (
+	is          => 'ro',
+	init_arg    => undef,
+	default     => sub { +{} },
+);
 
-	$self->contrive ('Class::Load', (
-		value => 'Class::Load',
+has _triggers   => (
+	is          => 'ro',
+	init_arg    => undef,
+	default     => sub { +{} },
+);
+
+use namespace::clean;
+
+sub BUILD {
+	my ($self) = @_;
+
+	$self->contrive ('Context::Singleton::Class::Load', (
+		as => sub { require Class::Load; 'Class::Load' },
 	));
 
-	$self->contrive ('class_loader', (
-		dep => [ 'Class::Load' ],
-		as  => sub { $_[0]->can ('load_class') },
+	$self->contrive ('Context::Singleton::Class::Load->load_class', (
+		value => 'load_class',
 	));
 
-	return $self;
+	$self->contrive ('Context::Singleton->load_class', (
+		dep => [
+			'Context::Singleton::Class::Load',
+			'Context::Singleton::Class::Load->load_class',
+		],
+		as  => sub { $_[0]->can ($_[1]) },
+	));
 }
 
 sub instance {
+	# TODO: role Context::Singleton::Role::Instance
 	state $instance = __PACKAGE__->new;
+
 	return $instance;
 }
 
-sub _contrive_class_loader {
+sub contrive_class {
 	my ($self, $name) = @_;
 
-	return if exists $self->{cache}{$name};
-
-	$self->contrive ($name, (
-		dep => [ 'class_loader' ],
-		as => eval "sub { \$_[0]->(q[$name]) && q[$name] }",
-	));
-
-	return;
+	unless (exists $self->_rules->{$name}) {
+		$self->contrive ($name, (
+			dep => [ 'Context::Singleton->load_class' ],
+			as => eval "sub { \$_[0]->(q[$name]) && q[$name] }",
+		));
+	}
 }
 
 sub _guess_builder_class {
@@ -64,7 +85,7 @@ sub contrive {
 	my ($self, $name, %def) = @_;
 
 	if ($def{class}) {
-		$self->_contrive_class_loader ($def{class});
+		$self->contrive_class ($def{class});
 		$def{builder} //= 'new';
 	}
 
@@ -77,7 +98,7 @@ sub contrive {
 	my $builder_class = $self->_guess_builder_class (\%def);
 	my $builder = $builder_class->new (%def);
 
-	push @{ $self->{cache}{ $name } }, $builder;
+	push @{ $self->_rules->{ $name } }, $builder;
 
 	return;
 }
@@ -85,7 +106,7 @@ sub contrive {
 sub trigger {
 	my ($self, $name, $code) = @_;
 
-	push @{ $self->{trigger}{ $name } }, $code;
+	push @{ $self->_triggers->{ $name } }, $code;
 
 	return;
 }
@@ -93,20 +114,20 @@ sub trigger {
 sub find_builder_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->{cache}{ $name } // [] };
+	return @{ $self->_rules->{ $name } // [] };
 }
 
 sub find_trigger_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->{trigger}{ $name } // [] };
+	return @{ $self->_triggers->{ $name } // [] };
 }
 
 sub load_rules {
 	my ($self, @packages) = @_;
 
 	for my $package (@packages) {
-		$self->{plugins}{ $package } //= do {
+		$self->_plugins->{ $package } //= do {
 			Module::Pluggable::Object->new (
 				require => 1,
 				search_path => [ $package ],
