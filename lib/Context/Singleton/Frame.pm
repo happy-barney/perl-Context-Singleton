@@ -1,5 +1,7 @@
 
 use v5.10;
+use Syntax::Construct 1.008 qw[ defined-or ];
+
 use strict;
 use warnings;
 

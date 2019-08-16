@@ -1,14 +1,12 @@
 
-use v5.10;
+use feature 'state';
+
 use strict;
 use warnings;
-use feature 'state';
 
 package Context::Singleton;
 
 use parent 'Exporter::Tiny';
-
-use Sub::Install qw();
 
 use Context::Singleton::Frame;
 
