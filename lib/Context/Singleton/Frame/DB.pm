@@ -33,6 +33,14 @@ has _triggers   => (
 	default     => sub { +{} },
 );
 
+has rule_class => (
+	is       => 'ro',
+	default  => sub {
+		require Context::Singleton::Rule;
+		return 'Context::Singleton::Rule';
+	},
+);
+
 use namespace::clean;
 
 sub BUILD {
@@ -81,6 +89,31 @@ sub _guess_builder_class {
 	return 'Context::Singleton::Frame::Builder::Array'
 }
 
+sub _search_rule {
+	my ($self, $name) = @_;
+
+	return $self->_rules->{$name};
+}
+
+sub _create_rule {
+	my ($self, $name) = @_;
+
+	return $self->_rules->{$name} = $self->rule_class->new (name => $name);
+}
+
+sub singleton {
+	my ($self, $name, @params) = @_;
+
+	my $rule = $self->_search_rule ($name)
+		// $self->_create_rule ($name)
+		;
+
+	$rule->set (@params)
+		if @params;
+
+	return $rule;
+}
+
 sub contrive {
 	my ($self, $name, %def) = @_;
 
@@ -95,18 +128,26 @@ sub contrive {
 		delete $def{deduce};
 	}
 
+	my $singleton = $self->singleton ($name);
+
+	return $singleton->set (default => $def{value})
+		if exists $def{value};
+
 	my $builder_class = $self->_guess_builder_class (\%def);
 	my $builder = $builder_class->new (%def);
 
-	push @{ $self->_rules->{ $name } }, $builder;
+	$singleton->add_builder ($builder);
 
 	return;
 }
 
 sub trigger {
-	my ($self, $name, $code) = @_;
+    my ($self, $name, $trigger) = @_;
 
-	push @{ $self->_triggers->{ $name } }, $code;
+	$self
+		->singleton ($name)
+		->add_trigger ($trigger)
+		;
 
 	return;
 }
@@ -114,13 +155,19 @@ sub trigger {
 sub find_builder_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->_rules->{ $name } // [] };
+	my $rule = $self->_search_rule ($name);
+
+	return unless $rule;
+	return $rule->builders;
 }
 
 sub find_trigger_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->_triggers->{ $name } // [] };
+	my $rule = $self->_search_rule ($name);
+
+	return unless $rule;
+	return $rule->triggers;
 }
 
 sub load_rules {

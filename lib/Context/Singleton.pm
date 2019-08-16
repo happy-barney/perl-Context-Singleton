@@ -32,6 +32,7 @@ sub _by_frame_class_accessors {
 			is_deduced    => eval "sub { $current_frame->is_deduced (\@_) }",
 			load_rules    => eval "sub { $current_frame->load_rules (\@_) }",
 			proclaim      => eval "sub { $current_frame->proclaim (\@_) }",
+			singleton     => eval "sub { $current_frame->singleton (\@_) }",
 			trigger       => eval "sub { $current_frame->trigger (\@_) }",
 			try_deduce    => eval "sub { $current_frame->try_deduce (\@_) }",
 		};

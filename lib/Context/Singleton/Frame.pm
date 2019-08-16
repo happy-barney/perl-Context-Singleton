@@ -218,6 +218,12 @@ sub _throw_nondeducible {
 	throw Context::Singleton::Exception::Nondeducible ($rule);
 }
 
+sub singleton {
+	my ($self, $rule, @params) = @_;
+
+	$self->db->singleton ($rule, @params);
+}
+
 sub contrive {
 	my ($self, $rule, @how) = @_;
 
