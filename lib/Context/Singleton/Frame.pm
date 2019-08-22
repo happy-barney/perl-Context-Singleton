@@ -18,6 +18,9 @@ use Context::Singleton::Frame::Promise;
 use Context::Singleton::Frame::Promise::Builder;
 use Context::Singleton::Frame::Promise::Rule;
 
+our $DIAG = 0;
+our $DIAG_DEPTH = 0;
+
 use overload (
 	'""' => sub { ref ($_[0]) . '[' . $_[0]->{depth} . ']' },
 	fallback => 1,
@@ -139,6 +142,9 @@ sub _class_rule_promise {
 sub _deduce_rule {
 	my ($self, $rule) = @_;
 
+	say "C:S:DIAG ${\ ('  ' x $DIAG_DEPTH)} deduce rule $rule"
+		if $DIAG;
+
 	my $promise = $self->_search_promise_for( $rule );
 	return $promise->value if $promise->is_deduced;
 
@@ -149,6 +155,8 @@ sub _deduce_rule {
 	my %deduced = $builder->default;
 
 	for my $dependency ($builder->required) {
+		local $DIAG_DEPTH = $DIAG_DEPTH + 1 if $DIAG;
+
 		# dependencies with default values may not be deducible
 		# relying on promises to detect deducible values
 		next unless $self->is_deducible( $dependency );
