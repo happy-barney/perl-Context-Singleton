@@ -50,6 +50,12 @@ sub new {
 	return $self;
 }
 
+sub build_frame {
+	my ($class, @params) = @_;
+
+	$class->new (@params);
+}
+
 sub depth {
 	$_[0]->{depth};
 }

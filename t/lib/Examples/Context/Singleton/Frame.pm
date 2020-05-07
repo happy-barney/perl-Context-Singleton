@@ -85,7 +85,7 @@ sub behaves_like_deduce {
 export build_frame => as {
 	my $parent = shared->frame_class // 'Context::Singleton::Frame';
 	$parent = shift if @_ % 2;
-	return $parent->new (@_);
+	return $parent->build_frame (@_);
 };
 
 export build_sample_dependencies => as {
