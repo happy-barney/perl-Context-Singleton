@@ -21,29 +21,32 @@ use overload (
 );
 
 sub new {
-	my ($class) = @_;
+	my ($class, %args) = @_;
+
 	my $self = {
 		promises    => {},
 		depth       => 0,
 		db          => $class->db_class->instance,
 	};
 
-	if (ref $class) {
-		$self->{root}   = $class->root_frame;
-		$self->{parent} = $class;
-		$self->{db}     = $class->db;
-		$self->{depth}  = $class->depth + 1;
-
-		$class = ref $class;
+	if (ref (my $parent = $args{parent})) {
+		$self->{root}   = $parent->root_frame;
+		$self->{parent} = $parent;
+		$self->{db}     = $parent->db;
+		$self->{depth}  = $parent->depth + 1;
 	}
 
+	$class = ref $class if ref $class;
 	return bless $self, $class;
 }
 
 sub build_frame {
 	my ($class, %proclaim) = @_;
 
-	my $self = $class->new;
+	my $self = $class->new (
+		parent => $class,
+	);
+
 	$self->proclaim (%proclaim);
 
 	return $self;
