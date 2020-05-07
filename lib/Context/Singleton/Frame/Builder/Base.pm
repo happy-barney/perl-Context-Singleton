@@ -5,52 +5,50 @@ use warnings;
 
 package Context::Singleton::Frame::Builder::Base;
 
+use Moo;
+
 use List::MoreUtils;
 
-sub new {
-	my ($class, %params) = @_;
+has _default => (
+	is => 'ro',
+	init_arg => 'default',
+	default => sub { +{} },
+);
 
-	$params{default} //= {};
+has this => (
+	is => 'ro',
+);
 
-	my $self = bless \%params, $class;
+has dep => (
+	is => 'ro',
+);
 
-	$self->{required} = [ List::MoreUtils::uniq $self->_build_required ];
+has as => (
+	is => 'ro',
+	predicate => 'has_as',
+);
 
-	return $self;
-}
+has call => (
+	is => 'ro',
+	predicate => 'has_call',
+);
+
+has builder => (
+	is => 'ro',
+	predicate => 'has_builder',
+);
+
+has _required => (
+	init_arg => undef,
+	is => 'ro',
+	lazy => 1,
+	default => sub { [ List::MoreUtils::uniq $_[0]->_build_required ] },
+);
 
 sub _build_required {
 	my ($self) = @_;
 
 	return grep defined, $self->this;
-}
-
-sub this {
-	$_[0]->{this};
-}
-
-sub _default {
-	$_[0]->{default};
-}
-
-sub _required {
-	$_[0]->{required};
-}
-
-sub as {
-	$_[0]->{as};
-}
-
-sub call {
-	$_[0]->{call};
-}
-
-sub builder {
-	$_[0]->{builder};
-}
-
-sub dep {
-	$_[0]->{dep};
 }
 
 sub required {
@@ -84,12 +82,12 @@ sub build {
 	my @args = $self->build_callback_args ($resolved);
 
 	return $self->as->(@args)
-		if $self->as;
+		if $self->has_as;
 
 	my $this = shift @args;
 
 	return $this->can ($self->call)->(@args)
-		if $self->call;
+		if $self->has_call;
 
 	return $this->${\ $self->builder } (@args);
 }

@@ -29,6 +29,7 @@ my %module_build_args = (
     "List::MoreUtils" => 0,
     "List::Util" => 0,
     "Module::Pluggable::Object" => 0,
+    "Moo" => 0,
     "Ref::Util" => 0,
     "Scalar::Util" => 0,
     "Sub::Install" => 0,

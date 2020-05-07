@@ -4,21 +4,15 @@ use warnings;
 
 package Context::Singleton::Frame::Promise::Rule;
 
-use parent qw[ Context::Singleton::Frame::Promise ];
+use Moo;
 
-sub new {
-	my ($class, %params) = @_;
+extends 'Context::Singleton::Frame::Promise';
 
-	my $self = $class->SUPER::new (%params);
+use namespace::clean;
 
-	$self->{rule} = $params{rule};
-
-	$self;
-}
-
-sub rule {
-	$_[0]->{rule};
-}
+has rule => (
+	is => 'ro',
+);
 
 sub notify_deducible {
 	my ($self, $in_depth) = @_;

@@ -7,6 +7,7 @@ requires "Exporter::Tiny" => "0";
 requires "List::MoreUtils" => "0";
 requires "List::Util" => "0";
 requires "Module::Pluggable::Object" => "0";
+requires "Moo" => "0";
 requires "Ref::Util" => "0";
 requires "Scalar::Util" => "0";
 requires "Sub::Install" => "0";

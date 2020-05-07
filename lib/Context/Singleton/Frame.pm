@@ -5,6 +5,7 @@ use warnings;
 
 package Context::Singleton::Frame;
 
+use Moo;
 use List::Util;
 
 use Context::Singleton::Frame::DB;
@@ -15,30 +16,51 @@ use Context::Singleton::Frame::Promise;
 use Context::Singleton::Frame::Promise::Builder;
 use Context::Singleton::Frame::Promise::Rule;
 
+use namespace::clean;
+
 use overload (
 	'""' => sub { ref ($_[0]) . '[' . $_[0]->{depth} . ']' },
 	fallback => 1,
 );
 
-sub new {
-	my ($class, %args) = @_;
+has root => (
+	is => 'ro',
+);
 
-	my $self = {
-		promises    => {},
-		depth       => 0,
-		db          => $class->db_class->instance,
-	};
+has parent => (
+	is => 'ro',
+);
 
-	if (ref (my $parent = $args{parent})) {
-		$self->{root}   = $parent->root_frame;
-		$self->{parent} = $parent;
-		$self->{db}     = $parent->db;
-		$self->{depth}  = $parent->depth + 1;
+has db => (
+	is => 'ro',
+	default => sub { $_[0]->db_class->instance },
+);
+
+has depth => (
+	is => 'ro',
+	default => sub { 0 },
+);
+
+has promises => (
+	init_arg => undef,
+	is => 'ro',
+	default => sub { +{} },
+);
+
+around BUILDARGS => sub {
+	my ($orig, $class, %args) = @_;
+
+	delete $args{parent}
+		unless ref $args{parent};
+
+	if (my $parent = $args{parent}) {
+		$args{root}   = $parent->root_frame;
+		$args{db}     = $parent->db;
+		$args{depth}  = $parent->depth + 1;
 	}
 
-	$class = ref $class if ref $class;
-	return bless $self, $class;
-}
+	$class->$orig (%args);
+};
 
 sub build_frame {
 	my ($class, %proclaim) = @_;
@@ -52,24 +74,8 @@ sub build_frame {
 	return $self;
 }
 
-sub depth {
-	$_[0]->{depth};
-}
-
-sub parent {
-	$_[0]->{parent};
-}
-
 sub db_class {
 	'Context::Singleton::Frame::DB';
-}
-
-sub db {
-	$_[0]->{db};
-}
-
-sub promises {
-	$_[0]->{promises};
 }
 
 sub debug {
@@ -188,7 +194,7 @@ sub _frame_by_depth {
 }
 
 sub root_frame {
-	$_[0]->{root} // $_[0];
+	$_[0]->root // $_[0];
 }
 
 sub _search_promise_for {
