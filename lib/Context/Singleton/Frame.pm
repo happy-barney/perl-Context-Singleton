@@ -6,7 +6,6 @@ use warnings;
 package Context::Singleton::Frame;
 
 use List::Util;
-use Scalar::Util;
 
 use Context::Singleton::Frame::DB;
 use Context::Singleton::Exception::Invalid;
@@ -30,17 +29,12 @@ sub new {
 	};
 
 	if (ref $class) {
-		$self->{root}   = $class->_root_frame;
+		$self->{root}   = $class->root_frame;
 		$self->{parent} = $class;
 		$self->{db}     = $class->db;
 		$self->{depth}  = $class->depth + 1;
 
 		$class = ref $class;
-	}
-
-	unless ($self->{root}) {
-		$self->{root} = $self;
-		Scalar::Util::weaken $self->{root};
 	}
 
 	return bless $self, $class;
@@ -190,8 +184,8 @@ sub _frame_by_depth {
 	$found;
 }
 
-sub _root_frame {
-	$_[0]->{root};
+sub root_frame {
+	$_[0]->{root} // $_[0];
 }
 
 sub _search_promise_for {
