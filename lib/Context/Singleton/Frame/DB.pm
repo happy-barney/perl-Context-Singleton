@@ -19,7 +19,8 @@ sub new {
 
 	my $self = bless {
 		cache => {},
-		plugin => {},
+		plugins => {},
+		triggers => {},
 	}, $class;
 
 	$self->contrive ('Class::Load', (
@@ -39,10 +40,22 @@ sub instance {
 	return $instance;
 }
 
+sub cache {
+	$_[0]->{cache};
+}
+
+sub triggers {
+	$_[0]->{triggers};
+}
+
+sub plugins {
+	$_[0]->{plugins};
+}
+
 sub _contrive_class_loader {
 	my ($self, $name) = @_;
 
-	return if exists $self->{cache}{$name};
+	return if exists $self->cache->{$name};
 
 	$self->contrive ($name, (
 		dep => [ 'class_loader' ],
@@ -77,7 +90,7 @@ sub contrive {
 	my $builder_class = $self->_guess_builder_class (\%def);
 	my $builder = $builder_class->new (%def);
 
-	push @{ $self->{cache}{ $name } }, $builder;
+	push @{ $self->cache->{ $name } }, $builder;
 
 	return;
 }
@@ -85,7 +98,7 @@ sub contrive {
 sub trigger {
 	my ($self, $name, $code) = @_;
 
-	push @{ $self->{trigger}{ $name } }, $code;
+	push @{ $self->triggers->{ $name } }, $code;
 
 	return;
 }
@@ -93,20 +106,20 @@ sub trigger {
 sub find_builder_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->{cache}{ $name } // [] };
+	return @{ $self->cache->{ $name } // [] };
 }
 
 sub find_trigger_for {
 	my ($self, $name) = @_;
 
-	return @{ $self->{trigger}{ $name } // [] };
+	return @{ $self->triggers->{ $name } // [] };
 }
 
 sub load_rules {
 	my ($self, @packages) = @_;
 
 	for my $package (@packages) {
-		$self->{plugins}{ $package } //= do {
+		$self->plugins->{ $package } //= do {
 			Module::Pluggable::Object->new (
 				require => 1,
 				search_path => [ $package ],

@@ -14,7 +14,7 @@ sub new {
 	my $self = $class->SUPER::new (@params);
 
 	unless (ref $class) {
-		$self->{db} = $self->default_db_class->new;
+		$self->{db} = $self->db_class->new;
 		$self->contrive_builders if $self->can ('contrive_builders' );
 	}
 

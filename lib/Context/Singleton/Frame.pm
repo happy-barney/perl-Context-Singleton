@@ -26,14 +26,14 @@ sub new {
 	my $self = {
 		promises    => {},
 		depth       => 0,
-		db          => $class->default_db_instance,
+		db          => $class->db_class->instance,
 	};
 
 	if (ref $class) {
-		$self->{root}   = $class->{root};
+		$self->{root}   = $class->_root_frame;
 		$self->{parent} = $class;
-		$self->{db}     = $class->{db};
-		$self->{depth}  = $class->{depth} + 1;
+		$self->{db}     = $class->db;
+		$self->{depth}  = $class->depth + 1;
 
 		$class = ref $class;
 	}
@@ -58,16 +58,16 @@ sub parent {
 	$_[0]->{parent};
 }
 
-sub default_db_class {
+sub db_class {
 	'Context::Singleton::Frame::DB';
-}
-
-sub default_db_instance {
-	$_[0]->default_db_class->instance;
 }
 
 sub db {
 	$_[0]->{db};
+}
+
+sub promises {
+	$_[0]->{promises};
 }
 
 sub debug {
@@ -107,8 +107,8 @@ sub _build_builder_promise_for {
 sub _build_rule_promise_for {
 	my ($self, $rule) = @_;
 
-	$self->{promises}{$rule} // do {
-		my $promise = $self->{promises}{$rule} = $self->_class_rule_promise->new (
+	$self->promises->{$rule} // do {
+		my $promise = $self->promises->{$rule} = $self->_class_rule_promise->new (
 			depth => $self->depth,
 			rule => $rule,
 		);
@@ -166,7 +166,7 @@ sub _execute_triggers {
 sub _find_promise_for {
 	my ($self, $rule) = @_;
 
-	$self->{promises}{$rule};
+	$self->promises->{$rule};
 }
 
 sub _frame_by_depth {

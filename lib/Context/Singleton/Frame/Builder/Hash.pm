@@ -18,7 +18,7 @@ sub _build_required {
 sub build_callback_args {
 	my ($self, $resolved) = @_;
 
-	my $dep = $self->{dep};
+	my $dep = $self->dep;
 	return (
 		$self->SUPER::build_callback_args ($resolved),
 		map +( $_ => $resolved->{$dep->{$_}} ), keys %$dep,
