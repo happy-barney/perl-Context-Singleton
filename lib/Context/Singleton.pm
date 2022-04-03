@@ -12,6 +12,7 @@ use Context::Singleton::Frame;
 
 our @EXPORT = (
 	qw[ contrive        ],
+	qw[ contrive_class  ],
 	qw[ current_frame   ],
 	qw[ deduce          ],
 	qw[ frame           ],
@@ -33,15 +34,16 @@ sub _exported_accessors {
 		eval "$current_frame = $frame_class->build_frame";
 
 		+{
-			contrive      => eval "sub { $current_frame->contrive (\@_) }",
-			current_frame => eval "sub { $current_frame }",
-			deduce        => eval "sub { $current_frame->deduce (\@_) }",
-			frame         => eval "sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };",
-			is_deduced    => eval "sub { $current_frame->is_deduced (\@_) }",
-			load_rules    => eval "sub { $current_frame->load_rules (\@_) }",
-			proclaim      => eval "sub { $current_frame->proclaim (\@_) }",
-			trigger       => eval "sub { $current_frame->trigger (\@_) }",
-			try_deduce    => eval "sub { $current_frame->try_deduce (\@_) }",
+			contrive        => eval "sub { $current_frame->contrive (\@_) }",
+			contrive_class  => eval "sub { $current_frame->db->contrive_class (\@_) }",
+			current_frame   => eval "sub { $current_frame }",
+			deduce          => eval "sub { $current_frame->deduce (\@_) }",
+			frame           => eval "sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };",
+			is_deduced      => eval "sub { $current_frame->is_deduced (\@_) }",
+			load_rules      => eval "sub { $current_frame->load_rules (\@_) }",
+			proclaim        => eval "sub { $current_frame->proclaim (\@_) }",
+			trigger         => eval "sub { $current_frame->trigger (\@_) }",
+			try_deduce      => eval "sub { $current_frame->try_deduce (\@_) }",
 		};
 	};
 }
@@ -240,6 +242,12 @@ Passed as a list of named parameters to the builder function.
 =back
 
 =back
+
+=head2 contrive_class
+
+  contrive_class 'Class::Name';
+
+Setup autoload mechanism same as when using C<< contrive >> with C<< class >>.
 
 =head1 TUTORIAL
 

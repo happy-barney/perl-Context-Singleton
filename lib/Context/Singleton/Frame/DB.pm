@@ -55,7 +55,7 @@ sub instance {
 	return $instance;
 }
 
-sub _contrive_class_loader {
+sub contrive_class {
 	my ($self, $name) = @_;
 
 	return if exists $self->cache->{$name};
@@ -80,7 +80,7 @@ sub contrive {
 	my ($self, $name, %def) = @_;
 
 	if ($def{class}) {
-		$self->_contrive_class_loader ($def{class});
+		$self->contrive_class ($def{class});
 		$def{builder} //= 'new';
 	}
 
