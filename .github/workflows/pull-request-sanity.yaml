@@ -1,0 +1,33 @@
+name: Pull-request sanity check
+
+on: [pull_request]
+
+jobs:
+  prohibit-fixup:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Prohibit fixup commits in PR
+      run: git remote; git log --oneline origin/master..HEAD; if [[ $(git log --format=%s origin/master..HEAD | grep -P '^(fixup|squash)!') ]] ; then false; else true; fi
+
+  prohibit-merge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha }}
+    - name: Prohibit merge commits in PR
+      run: git remote; git log --oneline origin/master..HEAD; if [[ $(git log --oneline --merges origin/master..HEAD) ]] ; then false; else true; fi
+
+  prohibit-wip:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Prohibit WIP / TODO commits in PR
+      run: git remote; git log --oneline origin/master..HEAD; if [[ $(git log --format=%s origin/master..HEAD | grep -i -P 'WIP|TODO') ]] ; then false; else true; fi
+
