@@ -22,13 +22,13 @@ sub _by_frame_class_accessors {
 
 	return $cache{$frame_class} //= do {
 		my $current_frame = "\$Context::Singleton::__::${frame_class}::current_frame";
-		eval "$current_frame = $frame_class->new";
+		eval "$current_frame = $frame_class->build_frame";
 
 		+{
 			contrive      => eval "sub { $current_frame->contrive (\@_) }",
 			current_frame => eval "sub { $current_frame }",
 			deduce        => eval "sub { $current_frame->deduce (\@_) }",
-			frame         => eval "sub (&) { local $current_frame = $current_frame->new; \$_[0]->(); };",
+			frame         => eval "sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };",
 			is_deduced    => eval "sub { $current_frame->is_deduced (\@_) }",
 			load_rules    => eval "sub { $current_frame->load_rules (\@_) }",
 			proclaim      => eval "sub { $current_frame->proclaim (\@_) }",

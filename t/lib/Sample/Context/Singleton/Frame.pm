@@ -9,9 +9,9 @@ our $VERSION = v1.0.0;
 package Sample::Context::Singleton::Frame::001::Unique::DB;
 use parent 'Context::Singleton::Frame';
 
-sub new {
+sub build_frame {
 	my ($class, @params) = @_;
-	my $self = $class->SUPER::new (@params);
+	my $self = $class->SUPER::build_frame (@params);
 
 	unless (ref $class) {
 		$self->{db} = $self->db_class->new;
