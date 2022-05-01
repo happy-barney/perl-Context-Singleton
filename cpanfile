@@ -11,7 +11,6 @@ requires "Module::Pluggable::Object" => "0";
 requires "Ref::Util" => "0";
 requires "Scalar::Util" => "0";
 requires "Sub::Install" => "0";
-requires "Variable::Magic" => "0";
 requires "feature" => "0";
 requires "namespace::clean" => "0";
 requires "overload" => "0";
