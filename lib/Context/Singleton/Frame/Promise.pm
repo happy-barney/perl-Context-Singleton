@@ -25,6 +25,7 @@ sub depth {
 }
 
 sub value {
+	$_[0]->{value} = $_[1] if @_ > 1;
 	$_[0]->{value};
 }
 
@@ -34,7 +35,7 @@ sub set_value {
 	$in_depth //= $self->depth;
 
 	unless ($self->is_deduced) {
-		$self->{value} = $value;
+		$self->value ($value);
 		$self->set_deducible ($in_depth);
 	}
 
@@ -46,6 +47,7 @@ sub is_deduced {
 }
 
 sub is_deducible {
+	$_[0]->{is_deducible} = $_[1] if @_ > 1;
 	$_[0]->{is_deducible};
 }
 
@@ -53,7 +55,7 @@ sub set_deducible {
 	my ($self, $in_depth) = @_;
 
 	unless ($self->is_deducible and $self->deduced_in_depth >= $in_depth) {
-		$self->{is_deducible} = 1;
+		$self->is_deducible (1);
 		$self->_set_deduced_in_depth ($in_depth);
 		$self->_broadcast_deducible;
 	}
