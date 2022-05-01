@@ -22,7 +22,7 @@ use overload (
 );
 
 sub new {
-	my ($class, %proclaim) = @_;
+	my ($class) = @_;
 	my $self = {
 		promises    => {},
 		depth       => 0,
@@ -43,17 +43,16 @@ sub new {
 		Scalar::Util::weaken $self->{root};
 	}
 
-	$self = bless $self, $class;
-
-	$self->proclaim (%proclaim);
-
-	return $self;
+	return bless $self, $class;
 }
 
 sub build_frame {
-	my ($class, @params) = @_;
+	my ($class, %proclaim) = @_;
 
-	$class->new (@params);
+	my $self = $class->new;
+	$self->proclaim (%proclaim);
+
+	return $self;
 }
 
 sub depth {
