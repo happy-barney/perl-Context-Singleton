@@ -44,6 +44,7 @@ my %module_build_args = (
     "Exporter" => 0,
     "FindBin" => 0,
     "Hash::Util" => 0,
+    "Safe::Isa" => 0,
     "Sub::Name" => 0,
     "Sub::Override" => 0,
     "Sub::Uplevel" => 0,
@@ -53,7 +54,8 @@ my %module_build_args = (
     "Test::Exception" => 0,
     "Test::More" => "0.94",
     "Test::Warnings" => 0,
-    "lib" => 0
+    "lib" => 0,
+    "require::relative" => 0
   }
 );
 
@@ -63,6 +65,7 @@ my %fallback_build_requires = (
   "FindBin" => 0,
   "Hash::Util" => 0,
   "Module::Build" => "0.28",
+  "Safe::Isa" => 0,
   "Sub::Name" => 0,
   "Sub::Override" => 0,
   "Sub::Uplevel" => 0,
@@ -72,7 +75,8 @@ my %fallback_build_requires = (
   "Test::Exception" => 0,
   "Test::More" => "0.94",
   "Test::Warnings" => 0,
-  "lib" => 0
+  "lib" => 0,
+  "require::relative" => 0
 );
 
 

@@ -26,6 +26,7 @@ on 'test' => sub {
   requires "Exporter" => "0";
   requires "FindBin" => "0";
   requires "Hash::Util" => "0";
+  requires "Safe::Isa" => "0";
   requires "Sub::Name" => "0";
   requires "Sub::Override" => "0";
   requires "Sub::Uplevel" => "0";
@@ -36,6 +37,7 @@ on 'test' => sub {
   requires "Test::More" => "0.94";
   requires "Test::Warnings" => "0";
   requires "lib" => "0";
+  requires "require::relative" => "0";
 };
 
 on 'configure' => sub {
