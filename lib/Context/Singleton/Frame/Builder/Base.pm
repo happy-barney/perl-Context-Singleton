@@ -5,7 +5,7 @@ use warnings;
 
 package Context::Singleton::Frame::Builder::Base;
 
-use List::MoreUtils;
+use List::Util v1.450;
 
 sub new {
 	my ($class, %params) = @_;
@@ -14,7 +14,7 @@ sub new {
 
 	my $self = bless \%params, $class;
 
-	$self->{required} = [ List::MoreUtils::uniq $self->_build_required ];
+	$self->{required} = [ List::Util::uniq $self->_build_required ];
 
 	return $self;
 }

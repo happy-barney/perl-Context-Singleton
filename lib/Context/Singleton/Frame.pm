@@ -5,8 +5,6 @@ use warnings;
 
 package Context::Singleton::Frame;
 
-use List::Util;
-
 use Context::Singleton::Frame::DB;
 use Context::Singleton::Exception::Invalid;
 use Context::Singleton::Exception::Deduced;
