@@ -33,7 +33,7 @@ describe 'build_frame()' => as {
 	return;
 };
 
-describe_method _root_frame => [] => as {
+describe_method root_frame => [] => as {
 	test_method "root frame should return itself" => do {
 		my $root = $CLASS->build_frame;
 
