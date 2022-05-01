@@ -4,3 +4,6 @@
 /_build
 /blib
 /cover_db
+/Context-Singleton-*
+/.prove
+/*.org
