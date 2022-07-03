@@ -14,17 +14,17 @@ use Sample::Context::Singleton::Frame;
 use Context::Singleton::Frame;
 my $CLASS = 'Context::Singleton::Frame';
 
-describe 'new()' => as {
+describe 'build_frame()' => as {
 	frame_constructor 'should build root frame' => do {
-		my $root = $CLASS->new;
+		my $root = $CLASS->build_frame;
 
 		object          => $root,
 		expect_depth    => 0,
 	};
 
 	frame_constructor 'should build child frame' => do {
-		my $root = $CLASS->new;
-		my $child = $root->new->new;
+		my $root = $CLASS->build_frame;
+		my $child = $root->build_frame->build_frame;
 
 		object          => $child,
 		expect_depth    => 2,
@@ -33,17 +33,17 @@ describe 'new()' => as {
 	return;
 };
 
-describe_method _root_frame => [] => as {
+describe_method root_frame => [] => as {
 	test_method "root frame should return itself" => do {
-		my $root = $CLASS->new;
+		my $root = $CLASS->build_frame;
 
 		object  => $root,
 		expect  => $root,
 	};
 
 	test_method "child frame should return root frame" => do {
-		my $root = $CLASS->new;
-		my $frame = $root->new->new;
+		my $root = $CLASS->build_frame;
+		my $frame = $root->build_frame->build_frame;
 
 		object  => $frame,
 		expect  => $root,
@@ -54,7 +54,7 @@ describe_method _root_frame => [] => as {
 
 describe_method _frame_by_depth => [qw[ depth ]] => as {
 	test_method "returns undef if depth less then 0 (root frame depth)" => do {
-		my $root = $CLASS->new;
+		my $root = $CLASS->build_frame;
 
 		with_depth => -1,
 		object => $root,
@@ -62,8 +62,8 @@ describe_method _frame_by_depth => [qw[ depth ]] => as {
 	};
 
 	test_method "returns undef if depth is greater then frame depth" => do {
-		my $root = $CLASS->new;
-		my $child = $root->new->new;
+		my $root = $CLASS->build_frame;
+		my $child = $root->build_frame->build_frame;
 
 		with_depth => 1,
 		object => $root,
@@ -71,9 +71,9 @@ describe_method _frame_by_depth => [qw[ depth ]] => as {
 	};
 
 	test_method "returns expected frame" => do {
-		my $root = $CLASS->new;
-		my $expect = $root->new;         # depth 1
-		my $child = $expect->new->new;
+		my $root = $CLASS->build_frame;
+		my $expect = $root->build_frame;         # depth 1
+		my $child = $expect->build_frame->build_frame;
 
 		with_depth => 1,
 		object => $child,
@@ -139,7 +139,7 @@ describe_method proclaim   => [qw[ rule value ]] => as {
 	test_method_proclaim "should proclaim() rule if proclaim()-ed in parent frame" => do {
 		my $parent = build_frame (some_rule => 'bar');
 
-		object      => $parent->new,
+		object      => $parent->build_frame,
 		with_rule   => 'some_rule',
 		with_value  => 'foo',
 	};

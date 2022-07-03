@@ -5,9 +5,6 @@ use warnings;
 
 package Context::Singleton::Frame;
 
-use List::Util;
-use Scalar::Util;
-
 use Context::Singleton::Frame::DB;
 use Context::Singleton::Exception::Invalid;
 use Context::Singleton::Exception::Deduced;
@@ -22,28 +19,31 @@ use overload (
 );
 
 sub new {
-	my ($class, %proclaim) = @_;
+	my ($class, %args) = @_;
+
 	my $self = {
 		promises    => {},
 		depth       => 0,
-		db          => $class->default_db_instance,
+		db          => $class->db_class->instance,
 	};
 
-	if (ref $class) {
-		$self->{root}   = $class->{root};
-		$self->{parent} = $class;
-		$self->{db}     = $class->{db};
-		$self->{depth}  = $class->{depth} + 1;
-
-		$class = ref $class;
+	if (ref (my $parent = $args{parent})) {
+		$self->{root}   = $parent->root_frame;
+		$self->{parent} = $parent;
+		$self->{db}     = $parent->db;
+		$self->{depth}  = $parent->depth + 1;
 	}
 
-	unless ($self->{root}) {
-		$self->{root} = $self;
-		Scalar::Util::weaken $self->{root};
-	}
+	$class = ref $class if ref $class;
+	return bless $self, $class;
+}
 
-	$self = bless $self, $class;
+sub build_frame {
+	my ($class, %proclaim) = @_;
+
+	my $self = $class->new (
+		parent => $class,
+	);
 
 	$self->proclaim (%proclaim);
 
@@ -58,16 +58,16 @@ sub parent {
 	$_[0]->{parent};
 }
 
-sub default_db_class {
+sub db_class {
 	'Context::Singleton::Frame::DB';
-}
-
-sub default_db_instance {
-	$_[0]->default_db_class->instance;
 }
 
 sub db {
 	$_[0]->{db};
+}
+
+sub promises {
+	$_[0]->{promises};
 }
 
 sub debug {
@@ -107,8 +107,8 @@ sub _build_builder_promise_for {
 sub _build_rule_promise_for {
 	my ($self, $rule) = @_;
 
-	$self->{promises}{$rule} // do {
-		my $promise = $self->{promises}{$rule} = $self->_class_rule_promise->new (
+	$self->promises->{$rule} // do {
+		my $promise = $self->promises->{$rule} = $self->_class_rule_promise->new (
 			depth => $self->depth,
 			rule => $rule,
 		);
@@ -166,7 +166,7 @@ sub _execute_triggers {
 sub _find_promise_for {
 	my ($self, $rule) = @_;
 
-	$self->{promises}{$rule};
+	$self->promises->{$rule};
 }
 
 sub _frame_by_depth {
@@ -185,8 +185,8 @@ sub _frame_by_depth {
 	$found;
 }
 
-sub _root_frame {
-	$_[0]->{root};
+sub root_frame {
+	$_[0]->{root} // $_[0];
 }
 
 sub _search_promise_for {
