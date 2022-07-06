@@ -13,7 +13,7 @@ my %module_build_args = (
   "configure_requires" => {
     "Module::Build" => "0.28"
   },
-  "dist_abstract" => "handles context specific singletons",
+  "dist_abstract" => "Context specific singleton values",
   "dist_author" => [
     "Branislav Zahradn\x{ed}k <barney\@cpan.org>"
   ],
