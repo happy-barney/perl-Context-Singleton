@@ -67,9 +67,43 @@ sub _exporter_validate_opts {
 
 __END__
 
+=pod
+
+=encoding utf-8
+
 =head1 NAME
 
-Context::Singleton - handles context specific singletons
+Context::Singleton - Context specific singleton values
+
+=head1 GLOSSARY
+
+=head2 dependency
+
+I<Singleton> which value is required to build another I<singleton>'s value
+
+=head2 frame
+
+Frame represents hierarchy. It is for data what block is for code.
+Resource value is by default cached in the top-most frame providing
+all its dependencies.
+
+Cached values are destroyed upon leaving context.
+
+=head2 rule
+
+Rule specifies how to build singleton value
+
+	contrive 'singleton' => ( ... );
+
+There can be multiple rules for building a single I<singleton>.
+The one with most relevant dependencies will be used.
+When there are more available rules, the first defined will be used.
+
+Refer L<#contrive ()> for more.
+
+=head2 singleton
+
+A value identified by string. Singleton identifier is global.
 
 =head1 DESCRIPTION
 
@@ -78,152 +112,157 @@ Context::Singleton - handles context specific singletons
 As your workflow handles its tasks, granularity become finer and certain
 entities behaves like singletons.
 
-Nice example is user id/object after successful authentication.
-Its value is constant for every function/method called after it is known
-but is unknown and can represents millions of users.
+As your application evolves, this granularity changes along with data model
+and/or data representation.
 
 =head2 How does it differ from the multiton pattern?
 
-Multiton is a set of singletons (global variables) whereas Context::Singleton
-provides context scope.
+Multiton is a set of named singletons (global variables) whereas values
+mantained by L<Context::Singleton> are context sensitive.
 
 =head2 Doesn't C<local> already provide similar behaviour?
 
-Context::Singleton doesn't provide only localized scope.
+In addition to C<local> L<Context::Singleton> provides also immutability
+in scope assignment and lazy values built on demand.
 
-It provides immutability on scope and can build values based on dependencies.
-With dependency tracking it can rebuild them in inner scope in case their
-dependencies were modified.
+=head2 When use L<Context::Singleton>?
 
-=head1 EXPORTED FUNCTIONS
+=over
 
-=head2 Terms
+=item When your application evolves
 
-=head3 resource
+=item When your application has tests
 
-Singleton idenfication, string, global.
-
-=head3 recipe
-
-Rule specifies how to build value
-
-	contrive 'resource' => ( ... );
-
-There can be multiple recipes for building a C<singleton value>.
-The one with most relevant dependencies (those proclaimed in the deepest frame)
-will be used.
-If there are more available recipes, the first defined will be used.
-
-Refer L<#contrive> for more.
-
-=head3 frame
-
-Frame represents hierarchy.
-
-Resource values are by default cached in the top-most frame providing all their
-dependencies.
-
-Cached values are destroyed upon leaving context.
+=item
 
 =head1 EXPORTED FUNCTIONS
 
-Context singleton exports the following functions by default.
+L<Context::Singleton> uses L<Exporter::Tiny> to do hard work.
 
-=head2 frame CODE
+=head2 frame {}
 
 	frame {
 		...;
 	}
 
-Creates a new frame. Its argument behaves like a function and it returns its
-return value. It preserves list/scalar context when calling CODE.
+Creates a new I<frame>, calls its argument while preserving list/scalar context,
+and passes through returned value.
 
-=head2 proclaim resource => value, ...;
+It doesn't consume any exception.
 
-	proclaim resource => value;
-	proclaim resource => value, resource2 => value2;
+=head2 proclaim ()
 
-Define the value of a resource in the current context.
+	proclaim singleton => value;
+	proclaim singleton_1 => value, singleton_2 => value2;
 
-The resource's value in a given frame can be defined only once.
+Define the value of a I<singleton> in the current I<frame>.
 
-Returns the value of the last resource in the argument list.
+When it is already populated it throws an I<Context::Singleton::Exception::Deduced>
+exception.
 
-=head2 deduce
+Returns the value of the last I<singleton> from the argument list.
 
-	my $var = deduce 'resource';
+=head2 deduce ()
 
-Makes and returns a resource value available in current frame.
+	my $var = deduce 'singleton';
 
-If resource value is not available, it tries to build it using known recipes
-or looks into parent frames (using deepest = best).
+Returns a I<singleton> value relevant in current frame.
 
-=head2 load_path
+If I<singleton> value is not available, it tries to contrive it using
+known rules or looks into parent I<frame>.
+
+=head2 load_path ()
 
 	load_path 'prefix-1', ...;
 
 Evaluate all modules within given module prefix(es).
 Every prefix is evaluated only once.
 
-=head2 contrive
+=head2 contrive ()
 
-Defines new receipt how to build resource value
+Defines new I<rule> how to build I<singleton> value
 
-	contrive 'name' => (
-		class => 'Foo::Bar',
-		deduce => 'rule_object',
-		builder => 'new',
-		default => { rule_1 => 'v1', ... },
-		dep => [ 'rule_2', ... ],
-		dep => { param_a => 'rule_1', ... },
-		as => sub { ... },
-		value => 10,
-	);
+	contrive 'name'
+		=> class   => 'Foo::Bar'
+		=> deduce  => 'singleton'
+		=> builder => 'new'
+		=> default => { singleton_1 => 'v1', ... }
+		=> dep     => [ 'singleton_2', ... ]
+		=> dep     => { param_a => 'singleton_1', ... }
+		=> as      => sub { ... }
+		=> value   => 10
+	;
 
 =over
 
 =item value => constant
 
+	contrive 'http-request-timeout'
+    	=> value => 900
+		;
+
 Simplest rule, just constant value.
 
 =item as => CODEREF
 
-Defines code used to build resource value. Dependencies are passed as arguments.
+	contrive 'ideal-body-weight-ibw'
+		=> dep => [qw[ height gender ]]
+		=> as  => sub ($height, $gender) {
+			my $kg = 22 * ($heigth->meters - ($gender->is_woman ? 10 : 0)) ** 2;
+			Weight->new (kilograms => $height->centimeters - 100);
+		};
+
+Defines code used to build singleton value. Dependencies are passed as arguments.
+
+When used in conjuction with C<class> or C<deduce>, their value is passed as first
+argument (mimics method call).
+
 
 =item builder => method_name
 
-Specifies builder method name to be used by C<class> or C<deduce>.
+	contrive 'height-in-meters'
+		=> deduce  => 'height'
+		=> builder => 'meters'
+		;
+
+	contrive 'db-connection'
+		=> class   => 'DBI'
+		=> builder => 'connect'
+		=> dep     => [qw[ db-dsn db-user db-password db-connection-options ]]
+		;
+
+Specifies method name to be applied on C<class> or C<deduce>.
 Defaults to C<new>.
 
 =item class => Class::Name
 
 Calls the builder method with dependencies on the given class to build a value.
-Automatically creates a rule with the given class name using
-a default builder providing dynamic load.
+Automatically creates singleton C<Class::Name> with a rule dynamically loading
+given class and returning its name, almost like:
 
-Behaves essentially like
+	my $class_name = eval "require Class::Name; 'Class::Name'";
+	$class_name->$builder (@deps);
 
-	eval "use Class::Name";
-	Class::Name->$builder (@deps);
+When class I<singleton> is proclaimed class is not autoloaded.
 
-=item deduce => rule_name
+See also: L<#contrive_class ()
+
+=item deduce => singleton
 
 Calls the builder method (with dependencies) on the object available
-as a value of the given rule.
+as a value of the given I<singleton>.
 
-Behaves essentially like
-
-	my $object = deduce ('rule_name');
+	my $object = deduce ('singleton');
 	$object->$builder (@deps);
 
-=item default
+=item default => { singleton => value, ... }
 
-Default values of dependencies. If used they are treated as deduced in root context but
-not stored nor cached anywhere.
+Default values of dependencies. If used they are treated as deduced in root I<frame>
+but are not stored neither cached anywhere.
 
 =item dep
 
-Dependencies required to deduce this rule.
+Dependencies required for this rule.
 
 Two forms are recognized at the moment:
 
@@ -231,25 +270,39 @@ Two forms are recognized at the moment:
 
 =item ARRAYREF
 
-List of required rules.
+List of required singletons.
 Passed as a list to the builder function
 
 =item HASHREF
 
-Hash values are treated as rule names.
+Hash values are treated as singleton names.
 Passed as a list of named parameters to the builder function.
 
 =back
 
 =back
 
-=head2 contrive_class
+=head2 contrive_class ()
 
-  contrive_class 'Class::Name';
+	contrive_class 'Class::Name';
 
-Setup autoload mechanism same as when using C<< contrive >> with C<< class >>.
+Setup autoload mechanism same as when using C<contrive> with C<class>.
 
 =head1 TUTORIAL
 
 See short tutorial L<Context::Singleton::Tutorial>
 
+=head1 REPOSITORY
+
+https://github.com/happy-barney/perl-Context-Singleton
+
+=head1 AUTHOR
+
+Branislav Zahradník <barney@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+L<Context::Singleton> distribution can be distributed and modified
+under The Artistic License 2.0.
+
+=cut
