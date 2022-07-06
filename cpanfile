@@ -26,6 +26,7 @@ on 'test' => sub {
   requires "Exporter" => "0";
   requires "FindBin" => "0";
   requires "Hash::Util" => "0";
+  requires "Path::Tiny" => "0";
   requires "Safe::Isa" => "0";
   requires "Sub::Install" => "0";
   requires "Sub::Name" => "0";

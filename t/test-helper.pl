@@ -20,8 +20,11 @@ use Test::Warnings qw[
 	had_no_warnings
 ];
 
-use Safe::Isa;
+use Path::Tiny;
 use Ref::Util;
+use Safe::Isa;
+
+use lib Path::Tiny->new (__FILE__)->parent->child ('lib')->realpath->stringify;
 
 use Context::Singleton;
 
@@ -64,6 +67,12 @@ sub ok {
 	my ($title, %params) = @_;
 
 	it $title, %params, expect => bool (1);
+}
+
+sub does_singleton_exist {
+	my ($singleton) = @_;
+
+	return current_frame->db->cache->{$singleton};
 }
 
 1;
