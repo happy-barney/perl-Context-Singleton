@@ -4,17 +4,15 @@ use warnings;
 
 package Context::Singleton::Frame::Builder::Value;
 
-use parent qw[ Context::Singleton::Frame::Builder::Base ];
+use Moo;
 
-sub new {
-	my ($class, %def) = @_;
+use namespace::clean;
 
-	return $class->SUPER::new (value => $def{value});
-}
+BEGIN { extends 'Context::Singleton::Frame::Builder::Base' }
 
-sub value {
-	$_[0]->{value};
-}
+has 'value'
+	=> is       => 'ro'
+	;
 
 sub build {
 	my ($self) = @_;

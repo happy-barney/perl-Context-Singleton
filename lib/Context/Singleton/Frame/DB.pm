@@ -1,10 +1,13 @@
 
 use v5.10;
-use strict;
-use warnings;
 use feature 'state';
 
+use strict;
+use warnings;
+
 package Context::Singleton::Frame::DB;
+
+use Moo;
 
 use Class::Load;
 use Module::Pluggable::Object;
@@ -14,14 +17,28 @@ use Context::Singleton::Frame::Builder::Value;
 use Context::Singleton::Frame::Builder::Hash;
 use Context::Singleton::Frame::Builder::Array;
 
-sub new {
-	my ($class) = @_;
+use namespace::clean;
 
-	my $self = bless {
-		cache => {},
-		plugins => {},
-		triggers => {},
-	}, $class;
+has 'cache'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +{} }
+	;
+
+has 'triggers'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +{} }
+	;
+
+has 'plugins'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +{} }
+	;
+
+sub BUILD {
+	my ($self) = @_;
 
 	$self->contrive ('Class::Load', (
 		value => 'Class::Load',
@@ -31,25 +48,11 @@ sub new {
 		dep => [ 'Class::Load' ],
 		as  => sub { $_[0]->can ('load_class') },
 	));
-
-	return $self;
 }
 
 sub instance {
 	state $instance = __PACKAGE__->new;
 	return $instance;
-}
-
-sub cache {
-	$_[0]->{cache};
-}
-
-sub triggers {
-	$_[0]->{triggers};
-}
-
-sub plugins {
-	$_[0]->{plugins};
 }
 
 sub _contrive_class_loader {

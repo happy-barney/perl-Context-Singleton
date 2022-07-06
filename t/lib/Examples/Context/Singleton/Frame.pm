@@ -101,19 +101,19 @@ example expect_depth => as {
 	my (%params) = @_;
 	Hash::Util::lock_keys %params, qw[ object expect ];
 
-	it $title // "expect depth $params{expect}" => as { cmp_deeply $params{object}{depth}, $params{expect} };
+	it $title // "expect depth $params{expect}" => as { cmp_deeply $params{object}->depth, $params{expect} };
 };
 
 example it_should_have_parent => as {
 	my (%params) = @_;
 
-	it "should have parent" => as { ok $params{object}->{parent} };
+	it "should have parent" => as { ok $params{object}->parent };
 };
 
 example it_should_not_have_parent => as {
 	my (%params) = @_;
 
-	it "should not have parent" => as { ok ! $params{object}->{parent} };
+	it "should not have parent" => as { ok ! $params{object}->parent };
 };
 
 example should_proclaim => as {

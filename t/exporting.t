@@ -12,8 +12,8 @@ use Shared::Example::Context::Singleton (
 );
 
 package Child::Frame;
-
-use parent 'Context::Singleton::Frame';
+use Moo;
+BEGIN { extends 'Context::Singleton::Frame' }
 
 package main;
 
