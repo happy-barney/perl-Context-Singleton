@@ -40,7 +40,7 @@ sub it_should_know_about_rule {
 	$db //= $params{frame}->db if exists $params{frame};
 	$db //= Context::Singleton::Frame::DB->instance;
 
-    my $status = $db->find_builder_for ($params{singleton});
+    my $status = $db->search_builder_for ($params{singleton});
 
 	ok $status, "should know builder(s) for singleton $params{singleton}";
 };

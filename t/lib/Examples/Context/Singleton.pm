@@ -15,7 +15,7 @@ example it_should_know_about_rule => as {
 	my ($title, %params) = @_;
 
 	my $db = $params{db} // Context::Singleton::Frame::DB->instance;
-	my $status = $db->find_builder_for ($params{rule});
+	my $status = $db->search_builder_for ($params{rule});
 
 	it "should know about rule $params{rule}" => as { ok $status };
 };
@@ -24,7 +24,7 @@ example it_should_not_know_about_rule => as {
 	my ($title, %params) = @_;
 
 	my $db = $params{db} // Context::Singleton::Frame::DB->instance;
-	my $status = $db->find_builder_for ($params{rule});
+	my $status = $db->search_builder_for ($params{rule});
 
 	it "should not know about rule $params{rule}" => as { ok !$status };
 };
