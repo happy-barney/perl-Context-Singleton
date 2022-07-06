@@ -180,7 +180,7 @@ Passed as a list of named parameters to the builder function.
 
   contrive_class 'Class::Name';
 
-Setup autoload mechanism same as when used C<< contrive >> with C<< class >>.
+Setup autoload mechanism same as when using C<< contrive >> with C<< class >>.
 
 =head1 TUTORIAL
 
