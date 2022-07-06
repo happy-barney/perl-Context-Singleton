@@ -38,13 +38,13 @@ has 'plugins'
 	;
 
 sub BUILD {
-	my ($self) = @_;
+	my ($db) = @_;
 
-	$self->contrive ('Class::Load', (
+	$db->contrive ('Class::Load', (
 		value => 'Class::Load',
 	));
 
-	$self->contrive ('class_loader', (
+	$db->contrive ('class_loader', (
 		dep => [ 'Class::Load' ],
 		as  => sub { $_[0]->can ('load_class') },
 	));
@@ -56,11 +56,11 @@ sub instance {
 }
 
 sub contrive_class {
-	my ($self, $name) = @_;
+	my ($db, $name) = @_;
 
-	return if exists $self->cache->{$name};
+	return if exists $db->cache->{$name};
 
-	$self->contrive ($name, (
+	$db->contrive ($name, (
 		dep => [ 'class_loader' ],
 		as => eval "sub { \$_[0]->(q[$name]) && q[$name] }",
 	));
@@ -69,7 +69,7 @@ sub contrive_class {
 }
 
 sub _guess_builder_class {
-	my ($self, $def) = @_;
+	my ($db, $def) = @_;
 
 	return 'Context::Singleton::Frame::Builder::Value' if exists $def->{value};
 	return 'Context::Singleton::Frame::Builder::Hash'  if Ref::Util::is_hashref ($def->{dep});
@@ -77,10 +77,10 @@ sub _guess_builder_class {
 }
 
 sub contrive {
-	my ($self, $name, %def) = @_;
+	my ($db, $name, %def) = @_;
 
 	if ($def{class}) {
-		$self->contrive_class ($def{class});
+		$db->contrive_class ($def{class});
 		$def{builder} //= 'new';
 	}
 
@@ -90,39 +90,39 @@ sub contrive {
 		delete $def{deduce};
 	}
 
-	my $builder_class = $self->_guess_builder_class (\%def);
+	my $builder_class = $db->_guess_builder_class (\%def);
 	my $builder = $builder_class->new (%def);
 
-	push @{ $self->cache->{ $name } }, $builder;
+	push @{ $db->cache->{ $name } }, $builder;
 
 	return;
 }
 
 sub trigger {
-	my ($self, $name, $code) = @_;
+	my ($db, $name, $code) = @_;
 
-	push @{ $self->triggers->{ $name } }, $code;
+	push @{ $db->triggers->{ $name } }, $code;
 
 	return;
 }
 
 sub find_builder_for {
-	my ($self, $name) = @_;
+	my ($db, $name) = @_;
 
-	return @{ $self->cache->{ $name } // [] };
+	return @{ $db->cache->{ $name } // [] };
 }
 
 sub find_trigger_for {
-	my ($self, $name) = @_;
+	my ($db, $name) = @_;
 
-	return @{ $self->triggers->{ $name } // [] };
+	return @{ $db->triggers->{ $name } // [] };
 }
 
 sub load_rules {
-	my ($self, @packages) = @_;
+	my ($db, @packages) = @_;
 
 	for my $package (@packages) {
-		$self->plugins->{ $package } //= do {
+		$db->plugins->{ $package } //= do {
 			Module::Pluggable::Object->new (
 				require => 1,
 				search_path => [ $package ],
