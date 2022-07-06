@@ -135,3 +135,26 @@ sub load_rules {
 }
 
 1;
+
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+Context::Singleton::DB - Internal class storing singleton rules.
+
+=head1 DESCRIPTION
+
+This is internal package.
+
+=head1 AUTHOR
+
+Branislav Zahradník <barney@cpan.org>
+
+=head1 COPYRIGHT AND LICENCE
+
+This module is part of L<Context::Singleton> distribution.
+
+=cut
+

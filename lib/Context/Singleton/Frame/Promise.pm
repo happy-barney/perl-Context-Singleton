@@ -168,6 +168,8 @@ sub _notify_listener {
 
 __END__
 
+=pod
+
 =encoding utf-8
 
 =head1 NAME
@@ -177,4 +179,14 @@ Context::Singleton::Frame::Promise - basic promise logic
 =head1 DESCRIPTION
 
 Basic promise logic as required for L<Context::Singleton::Frame>
+
+=head1 AUTHOR
+
+Branislav Zahradník <barney@cpan.org>
+
+=head1 COPYRIGHT AND LICENCE
+
+This module is part of L<Context::Singleton> distribution.
+
+=cut
 
