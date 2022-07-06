@@ -106,13 +106,13 @@ sub trigger {
 	return;
 }
 
-sub find_builder_for {
+sub search_builder_for {
 	my ($db, $name) = @_;
 
 	return @{ $db->cache->{ $name } // [] };
 }
 
-sub find_trigger_for {
+sub search_trigger_for {
 	my ($db, $name) = @_;
 
 	return @{ $db->triggers->{ $name } // [] };
