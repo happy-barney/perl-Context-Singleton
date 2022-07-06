@@ -7,7 +7,8 @@ package Sample::Context::Singleton::Frame::Builder::Base;
 our $VERSION = v1.0.0;
 
 package Sample::Context::Singleton::Frame::Builder::Base::__::Builtin::Deps;
-use parent 'Context::Singleton::Frame::Builder::Base';
+use Moo;
+BEGIN { extends 'Context::Singleton::Frame::Builder::Base' }
 
 sub _build_required {
 	my ($self) = @_;

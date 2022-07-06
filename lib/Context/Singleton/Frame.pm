@@ -5,6 +5,8 @@ use warnings;
 
 package Context::Singleton::Frame;
 
+use Moo;
+
 use Context::Singleton::Frame::DB;
 use Context::Singleton::Exception::Invalid;
 use Context::Singleton::Exception::Deduced;
@@ -13,61 +15,74 @@ use Context::Singleton::Frame::Promise;
 use Context::Singleton::Frame::Promise::Builder;
 use Context::Singleton::Frame::Promise::Rule;
 
+use namespace::clean;
+
 use overload (
-	'""' => sub { ref ($_[0]) . '[' . $_[0]->{depth} . ']' },
+	'""' => sub { ref ($_[0]) . '[' . $_[0]->depth . ']' },
 	fallback => 1,
 );
 
-sub new {
-	my ($class, %args) = @_;
+has '_class_builder_promise'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { Context::Singleton::Frame::Promise::Builder:: }
+	;
 
-	my $self = {
-		promises    => {},
-		depth       => 0,
-		db          => $class->db_class->instance,
-	};
+has '_class_rule_promise'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { Context::Singleton::Frame::Promise::Rule:: }
+	;
 
-	if (ref (my $parent = $args{parent})) {
-		$self->{root}   = $parent->root_frame;
-		$self->{parent} = $parent;
-		$self->{db}     = $parent->db;
-		$self->{depth}  = $parent->depth + 1;
-	}
+has 'db'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { $_[0]->parent ? $_[0]->parent->db : $_[0]->db_class->instance }
+	;
 
-	$class = ref $class if ref $class;
-	return bless $self, $class;
-}
+has 'db_class'
+	=> is       => 'ro'
+	=> lazy     => 1
+	=> default  => sub { Context::Singleton::Frame::DB:: }
+	;
+
+has 'depth'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { $_[0]->parent ? $_[0]->parent->depth + 1 : 0 }
+	;
+
+has 'parent'
+	=> is       => 'ro'
+	;
+
+has 'root_frame'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { $_[0]->parent ? $_[0]->parent->root_frame : $_[0] }
+	;
+
+has 'promises'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +{} }
+	;
 
 sub build_frame {
 	my ($class, %proclaim) = @_;
 
 	my $self = $class->new (
-		parent => $class,
+		(parent => $class) x !! ref $class,
 	);
 
 	$self->proclaim (%proclaim);
 
 	return $self;
-}
-
-sub depth {
-	$_[0]->{depth};
-}
-
-sub parent {
-	$_[0]->{parent};
-}
-
-sub db_class {
-	'Context::Singleton::Frame::DB';
-}
-
-sub db {
-	$_[0]->{db};
-}
-
-sub promises {
-	$_[0]->{promises};
 }
 
 sub debug {
@@ -126,14 +141,6 @@ sub _build_rule_promise_for {
 	};
 }
 
-sub _class_builder_promise {
-	'Context::Singleton::Frame::Promise::Builder';
-}
-
-sub _class_rule_promise {
-	'Context::Singleton::Frame::Promise::Rule';
-}
-
 sub _deduce_rule {
 	my ($self, $rule) = @_;
 
@@ -183,10 +190,6 @@ sub _frame_by_depth {
 		while $distance-- > 0;
 
 	$found;
-}
-
-sub root_frame {
-	$_[0]->{root} // $_[0];
 }
 
 sub _search_promise_for {

@@ -4,27 +4,15 @@ use warnings;
 
 package Sample::Context::Singleton::Frame;
 
-our $VERSION = v1.0.0;
-
 package Sample::Context::Singleton::Frame::001::Unique::DB;
-use parent 'Context::Singleton::Frame';
-
-sub build_frame {
-	my ($class, @params) = @_;
-	my $self = $class->SUPER::build_frame (@params);
-
-	unless (ref $class) {
-		$self->{db} = $self->db_class->new;
-		$self->contrive_builders if $self->can ('contrive_builders' );
-	}
-
-	return $self;
-}
+use Moo;
+BEGIN { extends 'Context::Singleton::Frame' }
 
 package Sample::Context::Singleton::Frame::002::Resolve::Dependencies;
-our @ISA = 'Sample::Context::Singleton::Frame::001::Unique::DB';
+use Moo;
+BEGIN { extends 'Sample::Context::Singleton::Frame::001::Unique::DB' }
 
-sub contrive_builders {
+sub BUILD {
 	my ($self) = @_;
 
 	$self->db->contrive (sum => (
@@ -100,9 +88,10 @@ sub mul {
 }
 
 package Sample::Context::Singleton::Frame::__::Basic;
-our @ISA = 'Sample::Context::Singleton::Frame::001::Unique::DB';
+use Moo;
+BEGIN { extends 'Sample::Context::Singleton::Frame::001::Unique::DB' }
 
-sub contrive_builders {
+sub BUILD {
 	my ($self) = @_;
 
 	$self->contrive (constant => (

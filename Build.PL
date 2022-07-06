@@ -29,6 +29,7 @@ my %module_build_args = (
     "Exporter::Tiny" => 0,
     "List::Util" => "v1.450.0",
     "Module::Pluggable::Object" => 0,
+    "Moo" => 0,
     "Ref::Util" => 0,
     "Scalar::Util" => 0,
     "feature" => 0,

@@ -6,51 +6,50 @@ use warnings;
 package Context::Singleton::Frame::Builder::Base;
 
 use List::Util v1.450;
+use Moo;
 
-sub new {
-	my ($class, %params) = @_;
+use namespace::clean;
 
-	$params{default} //= {};
+has '_default'
+	=> is       => 'ro'
+	=> init_arg => 'default'
+	=> default  => sub { +{} }
+;
 
-	my $self = bless \%params, $class;
+has 'this'
+	=> is       => 'ro'
+	;
 
-	$self->{required} = [ List::Util::uniq $self->_build_required ];
+has 'dep'
+	=> is       => 'ro'
+	;
 
-	return $self;
-}
+has 'as'
+	=> is       => 'ro'
+	=> predicate => 'has_as'
+	;
+
+has 'call'
+	=> is       => 'ro'
+	=> predicate => 'has_call'
+	;
+
+has 'builder'
+	=> is       => 'ro'
+	=> predicate => 'has_builder'
+	;
+
+has '_required'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> lazy     => 1
+	=> default  => sub { [ List::Util::uniq $_[0]->_build_required ] }
+	;
 
 sub _build_required {
 	my ($self) = @_;
 
 	return grep defined, $self->this;
-}
-
-sub this {
-	$_[0]->{this};
-}
-
-sub _default {
-	$_[0]->{default};
-}
-
-sub _required {
-	$_[0]->{required};
-}
-
-sub as {
-	$_[0]->{as};
-}
-
-sub call {
-	$_[0]->{call};
-}
-
-sub builder {
-	$_[0]->{builder};
-}
-
-sub dep {
-	$_[0]->{dep};
 }
 
 sub required {
@@ -84,12 +83,12 @@ sub build {
 	my @args = $self->build_callback_args ($resolved);
 
 	return $self->as->(@args)
-		if $self->as;
+		if $self->has_as;
 
 	my $this = shift @args;
 
 	return $this->can ($self->call)->(@args)
-		if $self->call;
+		if $self->has_call;
 
 	return $this->${\ $self->builder } (@args);
 }

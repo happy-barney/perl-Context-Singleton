@@ -7,6 +7,7 @@ requires "Exception::Class" => "0";
 requires "Exporter::Tiny" => "0";
 requires "List::Util" => "v1.450.0";
 requires "Module::Pluggable::Object" => "0";
+requires "Moo" => "0";
 requires "Ref::Util" => "0";
 requires "Scalar::Util" => "0";
 requires "feature" => "0";

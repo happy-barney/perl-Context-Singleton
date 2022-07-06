@@ -4,21 +4,15 @@ use warnings;
 
 package Context::Singleton::Frame::Promise::Builder;
 
-use parent qw[ Context::Singleton::Frame::Promise ];
+use Moo;
 
-sub new {
-	my ($class, %params) = @_;
+use namespace::clean;
 
-	my $self = $class->SUPER::new (%params);
+BEGIN { extends 'Context::Singleton::Frame::Promise' }
 
-	$self->{builder} = $params{builder};
-
-	$self;
-}
-
-sub builder {
-	$_[0]->{builder};
-}
+has 'builder'
+	=> is       => 'ro'
+	;
 
 sub notify_deducible {
 	my ($self, $in_depth) = @_;

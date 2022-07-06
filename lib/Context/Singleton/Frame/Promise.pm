@@ -5,29 +5,46 @@ use warnings;
 
 package Context::Singleton::Frame::Promise;
 
+use Moo;
+
 use Scalar::Util qw[ weaken ];
 
 use namespace::clean;
 
-sub new {
-	my ($class, %params) = @_;
+has 'depth'
+	=> is       => 'ro'
+	;
 
-	bless {
-		depth           => $params{depth},
-		is_resolvable   => 0,
-		dependencies    => [],
-		listeners       => {},
-	}, $class;
-}
+has 'value'
+	=> is       => 'rw'
+	=> writer   => '_value'
+	=> predicate => 'is_deduced'
+	;
 
-sub depth {
-	$_[0]->{depth};
-}
+has 'is_deducible'
+	=> is       => 'rw'
+	=> init_arg => +undef
+	=> writer   => '_is_deducible'
+	=> default  => sub { 0 }
+	;
 
-sub value {
-	$_[0]->{value} = $_[1] if @_ > 1;
-	$_[0]->{value};
-}
+has 'deduced_in_depth'
+	=> is       => 'rw'
+	=> init_arg => +undef
+	=> writer   => '_deduced_in_depth'
+	;
+
+has '_dependencies'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +[] }
+	;
+
+has '_listeners'
+	=> is       => 'ro'
+	=> init_arg => +undef
+	=> default  => sub { +{} }
+	;
 
 sub set_value {
 	my ($self, $value, $in_depth) = @_;
@@ -35,44 +52,23 @@ sub set_value {
 	$in_depth //= $self->depth;
 
 	unless ($self->is_deduced) {
-		$self->value ($value);
+		$self->_value ($value);
 		$self->set_deducible ($in_depth);
 	}
 
 	$self;
 }
 
-sub is_deduced {
-	exists $_[0]->{value};
-}
-
-sub is_deducible {
-	$_[0]->{is_deducible} = $_[1] if @_ > 1;
-	$_[0]->{is_deducible};
-}
-
 sub set_deducible {
 	my ($self, $in_depth) = @_;
 
 	unless ($self->is_deducible and $self->deduced_in_depth >= $in_depth) {
-		$self->is_deducible (1);
-		$self->_set_deduced_in_depth ($in_depth);
+		$self->_is_deducible (1);
+		$self->_deduced_in_depth ($in_depth);
 		$self->_broadcast_deducible;
 	}
 
 	$self;
-}
-
-sub deduced_in_depth {
-	$_[0]->{in_depth};
-}
-
-sub _set_deduced_in_depth {
-	$_[0]->{in_depth} = $_[1];
-}
-
-sub _listeners {
-	$_[0]->{listeners};
 }
 
 sub add_listeners {
@@ -111,10 +107,6 @@ sub listen {
 	}
 
 	$self;
-}
-
-sub _dependencies {
-	$_[0]->{dependencies};
 }
 
 sub add_dependencies {
