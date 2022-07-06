@@ -76,30 +76,30 @@ has 'promises'
 sub build_frame {
 	my ($class, %proclaim) = @_;
 
-	my $self = $class->new (
+	my $frame = $class->new (
 		(parent => $class) x !! ref $class,
 	);
 
-	$self->proclaim (%proclaim);
+	$frame->proclaim (%proclaim);
 
-	return $self;
+	return $frame;
 }
 
 sub debug {
-	my ($self, @message) = @_;
+	my ($frame, @message) = @_;
 
 	my $sub = (caller(1))[3];
 	$sub =~ s/^.*://;
 
 	use feature 'say';
-	say "# [${\ $self->depth}] $sub ${\ join ' ', @message }";
+	say "# [${\ $frame->depth}] $sub ${\ join ' ', @message }";
 }
 
 sub _build_builder_promise_for {
-	my ($self, $builder) = @_;
+	my ($frame, $builder) = @_;
 
-	my $promise = $self->_class_builder_promise->new (
-		depth   => $self->depth,
+	my $promise = $frame->_class_builder_promise->new (
+		depth   => $frame->depth,
 		builder => $builder,
 	);
 
@@ -108,32 +108,32 @@ sub _build_builder_promise_for {
 	delete @required{ keys %optional };
 
 	$promise->add_dependencies (
-		map $self->_search_promise_for ($_), keys %required
+		map $frame->_search_promise_for ($_), keys %required
 	);
 
 	$promise->set_deducible (0) unless keys %required;
 
-	$promise->listen ($self->_search_promise_for ($_))
+	$promise->listen ($frame->_search_promise_for ($_))
 		for keys %optional;
 
 	$promise;
 }
 
 sub _build_rule_promise_for {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	$self->promises->{$rule} // do {
-		my $promise = $self->promises->{$rule} = $self->_class_rule_promise->new (
-			depth => $self->depth,
+	$frame->promises->{$rule} // do {
+		my $promise = $frame->promises->{$rule} = $frame->_class_rule_promise->new (
+			depth => $frame->depth,
 			rule => $rule,
 		);
 
-		$promise->add_dependencies ($self->parent->_search_promise_for ($rule))
-			if $self->parent;
+		$promise->add_dependencies ($frame->parent->_search_promise_for ($rule))
+			if $frame->parent;
 
-		for my $builder ($self->db->find_builder_for ($rule)) {
+		for my $builder ($frame->db->find_builder_for ($rule)) {
 			$promise->add_dependencies (
-				$self->_build_builder_promise_for ($builder)
+				$frame->_build_builder_promise_for ($builder)
 			);
 		}
 
@@ -142,9 +142,9 @@ sub _build_rule_promise_for {
 }
 
 sub _deduce_rule {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	my $promise = $self->_search_promise_for( $rule );
+	my $promise = $frame->_search_promise_for( $rule );
 	return $promise->value if $promise->is_deduced;
 
 	my $builder_promise = $promise->deducible_builder;
@@ -156,35 +156,35 @@ sub _deduce_rule {
 	for my $dependency ($builder->required) {
 		# dependencies with default values may not be deducible
 		# relying on promises to detect deducible values
-		next unless $self->is_deducible( $dependency );
+		next unless $frame->is_deducible( $dependency );
 
-		$deduced{$dependency} = $self->deduce ($dependency);
+		$deduced{$dependency} = $frame->deduce ($dependency);
 	}
 
 	$builder->build (\%deduced);
 }
 
 sub _execute_triggers {
-	my ($self, $rule, $value) = @_;
+	my ($frame, $rule, $value) = @_;
 
-	$_->($value) for $self->db->find_trigger_for ($rule);
+	$_->($value) for $frame->db->find_trigger_for ($rule);
 }
 
 sub _find_promise_for {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	$self->promises->{$rule};
+	$frame->promises->{$rule};
 }
 
 sub _frame_by_depth {
-	my ($self, $depth) = @_;
+	my ($frame, $depth) = @_;
 
 	return if $depth < 0;
 
-	my $distance = $self->depth - $depth;
+	my $distance = $frame->depth - $depth;
 	return if $distance < 0;
 
-	my $found = $self;
+	my $found = $frame;
 
 	$found = $found->parent
 		while $distance-- > 0;
@@ -193,38 +193,38 @@ sub _frame_by_depth {
 }
 
 sub _search_promise_for {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	$self->_find_promise_for ($rule)
-		// $self->_build_rule_promise_for ($rule)
+	$frame->_find_promise_for ($rule)
+		// $frame->_build_rule_promise_for ($rule)
 		;
 }
 
 sub _set_promise_value {
-	my ($self, $promise, $value) = @_;
+	my ($frame, $promise, $value) = @_;
 
-	$promise->set_value ($value, $self->depth);
-	$self->_execute_triggers ($promise->rule, $value);
+	$promise->set_value ($value, $frame->depth);
+	$frame->_execute_triggers ($promise->rule, $value);
 
 	$value;
 }
 
 sub _throw_deduced {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
 	throw Context::Singleton::Exception::Deduced ($rule);
 }
 
 sub _throw_nondeducible {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
 	throw Context::Singleton::Exception::Nondeducible ($rule);
 }
 
 sub contrive {
-	my ($self, $rule, @how) = @_;
+	my ($frame, $rule, @how) = @_;
 
-	$self->db->contrive ($rule, @how);
+	$frame->db->contrive ($rule, @how);
 }
 
 sub load_rules {
@@ -236,32 +236,32 @@ sub trigger {
 }
 
 sub deduce {
-	my ($self, $rule, @proclaim) = @_;
+	my ($frame, $rule, @proclaim) = @_;
 
-	$self = $self->new (@proclaim) if @proclaim;
+	$frame = $frame->new (@proclaim) if @proclaim;
 
-	$self->_throw_nondeducible ($rule)
-		unless $self->try_deduce ($rule);
+	$frame->_throw_nondeducible ($rule)
+		unless $frame->try_deduce ($rule);
 
-	$self->_find_promise_for ($rule)->value;
+	$frame->_find_promise_for ($rule)->value;
 }
 
 sub is_deduced {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	return unless my $promise = $self->_find_promise_for ($rule);
+	return unless my $promise = $frame->_find_promise_for ($rule);
 	return $promise->is_deduced;
 }
 
 sub is_deducible {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	return unless my $promise = $self->_search_promise_for ($rule);
+	return unless my $promise = $frame->_search_promise_for ($rule);
 	return $promise->is_deducible;
 }
 
 sub proclaim {
-	my ($self, @proclaim) = @_;
+	my ($frame, @proclaim) = @_;
 
 	return unless @proclaim;
 
@@ -270,26 +270,26 @@ sub proclaim {
 		my $key = shift @proclaim;
 		my $value = shift @proclaim;
 
-		my $promise = $self->_find_promise_for ($key)
-			// $self->_build_rule_promise_for ($key)
+		my $promise = $frame->_find_promise_for ($key)
+			// $frame->_build_rule_promise_for ($key)
 			;
 
-		$self->_throw_deduced ($key)
+		$frame->_throw_deduced ($key)
 			if $promise->is_deduced;
 
-		$retval = $self->_set_promise_value ($promise, $value);
+		$retval = $frame->_set_promise_value ($promise, $value);
 	}
 
 	$retval;
 }
 
 sub try_deduce {
-	my ($self, $rule) = @_;
+	my ($frame, $rule) = @_;
 
-	my $promise = $self->_search_promise_for ($rule);
+	my $promise = $frame->_search_promise_for ($rule);
 	return unless $promise->is_deducible;
 
-	my $value = $self
+	my $value = $frame
 		->_frame_by_depth ($promise->deduced_in_depth)
 		->_deduce_rule ($promise->rule)
 		;
