@@ -11,9 +11,7 @@ use Context::Singleton::Frame::DB;
 use Context::Singleton::Exception::Invalid;
 use Context::Singleton::Exception::Deduced;
 use Context::Singleton::Exception::Nondeducible;
-use Context::Singleton::Frame::Promise;
-use Context::Singleton::Frame::Promise::Builder;
-use Context::Singleton::Frame::Promise::Rule;
+use Context::Singleton::Frame::Deducer::Notifying;
 
 use namespace::clean;
 
@@ -22,19 +20,23 @@ use overload (
 	fallback => 1,
 );
 
-has '_class_builder_promise'
+has '_deducer_class'
 	=> is       => 'ro'
 	=> init_arg => +undef
 	=> lazy     => 1
-	=> default  => sub { Context::Singleton::Frame::Promise::Builder:: }
+	=> default  => sub { Context::Singleton::Frame::Deducer::Notifying:: }
 	;
 
-has '_class_rule_promise'
+has '_deducer'
 	=> is       => 'ro'
 	=> init_arg => +undef
 	=> lazy     => 1
-	=> default  => sub { Context::Singleton::Frame::Promise::Rule:: }
-	;
+	=> default  => sub { $_[0]->root_frame->_deducer_class->new (frame => $_[0]) }
+	=> handles  => [
+		'is_deduced',
+		'is_deducible',
+		'try_deduce',
+	];
 
 has 'db'
 	=> is       => 'ro'
@@ -67,12 +69,6 @@ has 'root_frame'
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->root_frame : $_[0] }
 	;
 
-has 'promises'
-	=> is       => 'ro'
-	=> init_arg => +undef
-	=> default  => sub { +{} }
-	;
-
 sub build_frame {
 	my ($class, %proclaim) = @_;
 
@@ -95,87 +91,6 @@ sub debug {
 	say "# [${\ $frame->depth}] $sub ${\ join ' ', @message }";
 }
 
-sub _build_builder_promise_for {
-	my ($frame, $builder) = @_;
-
-	my $promise = $frame->_class_builder_promise->new (
-		depth   => $frame->depth,
-		builder => $builder,
-	);
-
-	my %optional = $builder->default;
-	my %required = map +($_ => 1), $builder->required;
-	delete @required{ keys %optional };
-
-	$promise->add_dependencies (
-		map $frame->_establish_promise_for ($_), keys %required
-	);
-
-	$promise->set_deducible (0) unless keys %required;
-
-	$promise->listen ($frame->_establish_promise_for ($_))
-		for keys %optional;
-
-	$promise;
-}
-
-sub _build_rule_promise_for {
-	my ($frame, $singleton) = @_;
-
-	$frame->promises->{$singleton} // do {
-		my $promise = $frame->promises->{$singleton} = $frame->_class_rule_promise->new (
-			depth => $frame->depth,
-			rule => $singleton,
-		);
-
-		$promise->add_dependencies ($frame->parent->_establish_promise_for ($singleton))
-			if $frame->parent;
-
-		for my $builder ($frame->db->search_builder_for ($singleton)) {
-			$promise->add_dependencies (
-				$frame->_build_builder_promise_for ($builder)
-			);
-		}
-
-		$promise;
-	};
-}
-
-sub _deduce_rule {
-	my ($frame, $singleton) = @_;
-
-	my $promise = $frame->_establish_promise_for( $singleton );
-	return $promise->value if $promise->is_deduced;
-
-	my $builder_promise = $promise->deducible_builder;
-	return $builder_promise->value if $builder_promise->is_deduced;
-
-	my $builder = $builder_promise->builder;
-	my %deduced = $builder->default;
-
-	for my $dependency ($builder->required) {
-		# dependencies with default values may not be deducible
-		# relying on promises to detect deducible values
-		next unless $frame->is_deducible( $dependency );
-
-		$deduced{$dependency} = $frame->deduce ($dependency);
-	}
-
-	$builder->build (\%deduced);
-}
-
-sub _execute_triggers {
-	my ($frame, $singleton, $value) = @_;
-
-	$_->($value) for $frame->db->search_trigger_for ($singleton);
-}
-
-sub _search_promise_for {
-	my ($frame, $singleton) = @_;
-
-	$frame->promises->{$singleton};
-}
-
 sub _frame_by_depth {
 	my ($frame, $depth) = @_;
 
@@ -190,23 +105,6 @@ sub _frame_by_depth {
 		while $distance-- > 0;
 
 	$found;
-}
-
-sub _establish_promise_for {
-	my ($frame, $singleton) = @_;
-
-	$frame->_search_promise_for ($singleton)
-		// $frame->_build_rule_promise_for ($singleton)
-		;
-}
-
-sub _set_promise_value {
-	my ($frame, $promise, $value) = @_;
-
-	$promise->set_value ($value, $frame->depth);
-	$frame->_execute_triggers ($promise->rule, $value);
-
-	$value;
 }
 
 sub _throw_deduced {
@@ -243,21 +141,7 @@ sub deduce {
 	$frame->_throw_nondeducible ($singleton)
 		unless $frame->try_deduce ($singleton);
 
-	$frame->_search_promise_for ($singleton)->value;
-}
-
-sub is_deduced {
-	my ($frame, $singleton) = @_;
-
-	return unless my $promise = $frame->_search_promise_for ($singleton);
-	return $promise->is_deduced;
-}
-
-sub is_deducible {
-	my ($frame, $singleton) = @_;
-
-	return unless my $promise = $frame->_establish_promise_for ($singleton);
-	return $promise->is_deducible;
+	$frame->_deducer->deduce ($singleton);
 }
 
 sub proclaim {
@@ -267,36 +151,16 @@ sub proclaim {
 
 	my $retval;
 	while (@proclaim) {
-		my $key = shift @proclaim;
+		my $singleton = shift @proclaim;
 		my $value = shift @proclaim;
 
-		my $promise = $frame->_search_promise_for ($key)
-			// $frame->_build_rule_promise_for ($key)
-			;
+		$frame->_throw_deduced ($singleton)
+			if $frame->is_deduced ($singleton);
 
-		$frame->_throw_deduced ($key)
-			if $promise->is_deduced;
-
-		$retval = $frame->_set_promise_value ($promise, $value);
+		$retval = $frame->_deducer->proclaim ($singleton, $value);
 	}
 
 	$retval;
-}
-
-sub try_deduce {
-	my ($frame, $singleton) = @_;
-
-	my $promise = $frame->_establish_promise_for ($singleton);
-	return unless $promise->is_deducible;
-
-	my $value = $frame
-		->_frame_by_depth ($promise->deduced_in_depth)
-		->_deduce_rule ($promise->rule)
-		;
-
-	$promise->set_value ($value, $promise->deduced_in_depth);
-
-	1;
 }
 
 1;
