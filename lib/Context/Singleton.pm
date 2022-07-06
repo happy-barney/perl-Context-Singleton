@@ -8,15 +8,23 @@ package Context::Singleton;
 
 use parent 'Exporter::Tiny';
 
-use Sub::Install qw();
-
 use Context::Singleton::Frame;
 
-our @EXPORT = keys %{ _by_frame_class_accessors () };
+our @EXPORT = (
+	qw[ contrive        ],
+	qw[ current_frame   ],
+	qw[ deduce          ],
+	qw[ frame           ],
+	qw[ is_deduced      ],
+	qw[ load_rules      ],
+	qw[ proclaim        ],
+	qw[ trigger         ],
+	qw[ try_deduce      ],
+);
 
-sub _by_frame_class_accessors {
-	my ($frame_class) = @_;
-	$frame_class //= 'Context::Singleton::Frame';
+sub _exported_accessors {
+	my ($globals) = @_;
+	my $frame_class = $globals->{frame_class} // 'Context::Singleton::Frame';
 
 	state %cache;
 
@@ -41,24 +49,16 @@ sub _by_frame_class_accessors {
 sub _exporter_expand_sub {
 	my ($class, $name, $args, $globals) = @_;
 
-	return $name => _by_frame_class_accessors ($globals->{frame_class})->{$name};
+	return $name => _exported_accessors ($globals)->{$name};
 }
 
-sub import {
-	my ($class, @params) = @_;
+sub _exporter_validate_opts {
+   my ($class, $globals) = @_;
 
-	my $globals = Ref::Util::is_hashref ($params[0])
-		? shift @params
-		: {}
-		;
+   $class->SUPER::_exporter_validate_opts(@_);
 
-	$globals->{into} //= scalar caller;
-
-	$class->SUPER::import ($globals, @params);
-
-	_by_frame_class_accessors ($globals->{frame_class})->{load_rules}->(@{ $globals->{load_path} })
-		if $globals->{load_path};
-
+   _exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
+	   if $globals->{load_path};
 }
 
 1;
