@@ -94,7 +94,7 @@ Search for an instance or return empty result (or undef)
 
 # AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 # COPYRIGHT AND LICENSE
 

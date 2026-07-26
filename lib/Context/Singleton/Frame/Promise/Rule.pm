@@ -49,7 +49,7 @@ This is internal package.
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

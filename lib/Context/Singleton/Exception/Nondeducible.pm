@@ -30,7 +30,7 @@ This exception is thrown when singleton value cannot be deduced
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 
