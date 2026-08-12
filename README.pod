@@ -95,7 +95,7 @@ Returns the value of the last I<singleton> from the argument list.
 
 =head2 deduce ()
 
-	my $var = deduce 'singleton';
+	my $var = deduce q (singleton);
 
 Returns a I<singleton> value relevant in current frame.
 
@@ -104,7 +104,7 @@ known rules or looks into parent I<frame>.
 
 =head2 load_path ()
 
-	load_path 'prefix-1', ...;
+	load_path q (prefix-1), ...;
 
 Evaluate all modules within given module prefix(es).
 Every prefix is evaluated only once.
@@ -113,13 +113,13 @@ Every prefix is evaluated only once.
 
 Defines new I<rule> how to build I<singleton> value
 
-	contrive 'name'
-		=> class   => 'Foo::Bar'
-		=> deduce  => 'singleton'
-		=> builder => 'new'
-		=> default => { singleton_1 => 'v1', ... }
-		=> dep     => [ 'singleton_2', ... ]
-		=> dep     => { param_a => 'singleton_1', ... }
+	contrive q (name)
+		=> class   => q (Foo::Bar)
+		=> deduce  => q (singleton)
+		=> builder => q (new)
+		=> default => { singleton_1 => q (v1), ... }
+		=> dep     => [ q (singleton_2), ... ]
+		=> dep     => { param_a => q (singleton_1), ... }
 		=> as      => sub { ... }
 		=> value   => 10
 	;
@@ -128,15 +128,15 @@ Defines new I<rule> how to build I<singleton> value
 
 =item value => constant
 
-	contrive 'http-request-timeout'
-    	=> value => 900
+	contrive q (http-request-timeout)
+		=> value => 900
 		;
 
 Simplest rule, just constant value.
 
 =item as => CODEREF
 
-	contrive 'ideal-body-weight-ibw'
+	contrive q (ideal-body-weight-ibw)
 		=> dep => [qw[ height gender ]]
 		=> as  => sub ($height, $gender) {
 			my $kg = 22 * ($heigth->meters - ($gender->is_woman ? 10 : 0)) ** 2;
@@ -151,14 +151,14 @@ argument (mimics method call).
 
 =item builder => method_name
 
-	contrive 'height-in-meters'
-		=> deduce  => 'height'
-		=> builder => 'meters'
+	contrive q (height-in-meters)
+		=> deduce  => q (height)
+		=> builder => q (meters)
 		;
 
-	contrive 'db-connection'
-		=> class   => 'DBI'
-		=> builder => 'connect'
+	contrive q (db-connection)
+		=> class   => q (DBI)
+		=> builder => q (connect)
 		=> dep     => [qw[ db-dsn db-user db-password db-connection-options ]]
 		;
 
@@ -183,7 +183,7 @@ See also: L<#contrive_class ()
 Calls the builder method (with dependencies) on the object available
 as a value of the given I<singleton>.
 
-	my $object = deduce ('singleton');
+	my $object = deduce q (singleton);
 	$object->$builder (@deps);
 
 =item default => { singleton => value, ... }
@@ -215,9 +215,32 @@ Passed as a list of named parameters to the builder function.
 
 =head2 contrive_class ()
 
-	contrive_class 'Class::Name';
+	contrive_class q (Class::Name);
 
 Setup autoload mechanism same as when using C<contrive> with C<class>.
+
+=head1 SUBCLASSING
+
+	package My::Context::Singleton;
+	use parent q (Context::Singleton);
+
+	use My::Frame;
+	use constant DEFAULT_FRAME_CLASS => My::Frame::;
+
+	__PACKAGE__->import;
+
+A subclass of L<Context::Singleton> can declare a C<DEFAULT_FRAME_CLASS> constant
+to specify which L<Context::Singleton::Frame> (sub)class its exported functions
+operate on, without requiring every caller to pass C<frame_class> explicitly.
+
+C<frame_class> passed at C<use> time still takes precedence over
+C<DEFAULT_FRAME_CLASS>:
+
+	use My::Context::Singleton;                                     # uses My::Frame
+	use My::Context::Singleton { frame_class => q (Other::Frame) }; # uses Other::Frame
+
+See L<Context::Singleton::Frame/EXTENDING FRAME> for how to implement a custom
+frame class.
 
 =head1 TUTORIAL
 
@@ -229,7 +252,7 @@ https://github.com/happy-barney/perl-Context-Singleton
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 

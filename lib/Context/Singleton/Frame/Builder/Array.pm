@@ -9,10 +9,10 @@ use Moo;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Builder::Base' }
+BEGIN { extends q (Context::Singleton::Frame::Builder::Base) }
 
-has 'dep'
-	=> is       => 'ro'
+has q (dep)
+	=> is       => q (ro)
 	=> default  => sub { +[] }
 	;
 
@@ -50,7 +50,7 @@ This is internal package.
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

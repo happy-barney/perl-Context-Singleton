@@ -2,13 +2,15 @@
 use v5.10;
 use strict;
 use warnings;
-use feature 'state';
+use feature q (state);
 
 package Context::Singleton;
 
-use parent 'Exporter::Tiny';
+use parent q (Exporter::Tiny);
 
 use Context::Singleton::Frame;
+
+use constant DEFAULT_FRAME_CLASS => Context::Singleton::Frame::;
 
 our @EXPORT = (
 	qw[ contrive        ],
@@ -24,44 +26,42 @@ our @EXPORT = (
 );
 
 sub _exported_accessors {
-	my ($globals) = @_;
-	my $frame_class = $globals->{frame_class} // 'Context::Singleton::Frame';
+	my ($class, $globals) = @_;
+	my $frame_class = $globals->{frame_class} // $class->DEFAULT_FRAME_CLASS;
 
 	state %cache;
 
-	return $cache{$frame_class} //= do {
-		my $current_frame = "\$Context::Singleton::__::${frame_class}::current_frame";
-		eval "$current_frame = $frame_class->build_frame";
-
-		+{
-			contrive        => eval "sub { $current_frame->contrive (\@_) }",
-			contrive_class  => eval "sub { $current_frame->db->contrive_class (\@_) }",
-			current_frame   => eval "sub { $current_frame }",
-			deduce          => eval "sub { $current_frame->deduce (\@_) }",
-			frame           => eval "sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };",
-			is_deduced      => eval "sub { $current_frame->is_deduced (\@_) }",
-			load_rules      => eval "sub { $current_frame->load_rules (\@_) }",
-			proclaim        => eval "sub { $current_frame->proclaim (\@_) }",
-			trigger         => eval "sub { $current_frame->trigger (\@_) }",
-			try_deduce      => eval "sub { $current_frame->try_deduce (\@_) }",
-		};
+	return $cache{$frame_class} //= +{
+		contrive        => eval qq (sub { $frame_class->contrive (\@_) }),
+		contrive_class  => eval qq (sub { $frame_class->contrive_class (\@_) }),
+		current_frame   => eval qq (sub { $frame_class->current_frame }),
+		deduce          => eval qq (sub { $frame_class->deduce (\@_) }),
+		frame           => eval qq (sub (&) { $frame_class->frame (\$_[0]); };),
+		is_deduced      => eval qq (sub { $frame_class->is_deduced (\@_) }),
+		load_rules      => eval qq (sub { $frame_class->load_rules (\@_) }),
+		proclaim        => eval qq (sub { $frame_class->proclaim (\@_) }),
+		trigger         => eval qq (sub { $frame_class->trigger (\@_) }),
+		try_deduce      => eval qq (sub { $frame_class->try_deduce (\@_) }),
 	};
 }
 
 sub _exporter_expand_sub {
 	my ($class, $name, $args, $globals) = @_;
 
-	return $name => _exported_accessors ($globals)->{$name};
+	return $name => _exported_accessors ($class, $globals)->{$name};
 }
 
 sub _exporter_validate_opts {
-   my ($class, $globals) = @_;
+	my ($class, $globals) = @_;
 
-   $class->SUPER::_exporter_validate_opts(@_);
+	$class->SUPER::_exporter_validate_opts (@_);
 
-   _exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
-	   if $globals->{load_path};
+	_exported_accessors ($class, $globals)->{load_rules}->(@{ $globals->{load_path} })
+		if $globals->{load_path}
+		;
 }
+
+__PACKAGE__->import;
 
 1;
 
@@ -164,7 +164,7 @@ Returns the value of the last I<singleton> from the argument list.
 
 =head2 deduce ()
 
-	my $var = deduce 'singleton';
+	my $var = deduce q (singleton);
 
 Returns a I<singleton> value relevant in current frame.
 
@@ -173,7 +173,7 @@ known rules or looks into parent I<frame>.
 
 =head2 load_path ()
 
-	load_path 'prefix-1', ...;
+	load_path q (prefix-1), ...;
 
 Evaluate all modules within given module prefix(es).
 Every prefix is evaluated only once.
@@ -182,13 +182,13 @@ Every prefix is evaluated only once.
 
 Defines new I<rule> how to build I<singleton> value
 
-	contrive 'name'
-		=> class   => 'Foo::Bar'
-		=> deduce  => 'singleton'
-		=> builder => 'new'
-		=> default => { singleton_1 => 'v1', ... }
-		=> dep     => [ 'singleton_2', ... ]
-		=> dep     => { param_a => 'singleton_1', ... }
+	contrive q (name)
+		=> class   => q (Foo::Bar)
+		=> deduce  => q (singleton)
+		=> builder => q (new)
+		=> default => { singleton_1 => q (v1), ... }
+		=> dep     => [ q (singleton_2), ... ]
+		=> dep     => { param_a => q (singleton_1), ... }
 		=> as      => sub { ... }
 		=> value   => 10
 	;
@@ -197,15 +197,15 @@ Defines new I<rule> how to build I<singleton> value
 
 =item value => constant
 
-	contrive 'http-request-timeout'
-    	=> value => 900
+	contrive q (http-request-timeout)
+		=> value => 900
 		;
 
 Simplest rule, just constant value.
 
 =item as => CODEREF
 
-	contrive 'ideal-body-weight-ibw'
+	contrive q (ideal-body-weight-ibw)
 		=> dep => [qw[ height gender ]]
 		=> as  => sub ($height, $gender) {
 			my $kg = 22 * ($heigth->meters - ($gender->is_woman ? 10 : 0)) ** 2;
@@ -220,14 +220,14 @@ argument (mimics method call).
 
 =item builder => method_name
 
-	contrive 'height-in-meters'
-		=> deduce  => 'height'
-		=> builder => 'meters'
+	contrive q (height-in-meters)
+		=> deduce  => q (height)
+		=> builder => q (meters)
 		;
 
-	contrive 'db-connection'
-		=> class   => 'DBI'
-		=> builder => 'connect'
+	contrive q (db-connection)
+		=> class   => q (DBI)
+		=> builder => q (connect)
 		=> dep     => [qw[ db-dsn db-user db-password db-connection-options ]]
 		;
 
@@ -252,7 +252,7 @@ See also: L<#contrive_class ()
 Calls the builder method (with dependencies) on the object available
 as a value of the given I<singleton>.
 
-	my $object = deduce ('singleton');
+	my $object = deduce q (singleton);
 	$object->$builder (@deps);
 
 =item default => { singleton => value, ... }
@@ -284,9 +284,32 @@ Passed as a list of named parameters to the builder function.
 
 =head2 contrive_class ()
 
-	contrive_class 'Class::Name';
+	contrive_class q (Class::Name);
 
 Setup autoload mechanism same as when using C<contrive> with C<class>.
+
+=head1 SUBCLASSING
+
+	package My::Context::Singleton;
+	use parent q (Context::Singleton);
+
+	use My::Frame;
+	use constant DEFAULT_FRAME_CLASS => My::Frame::;
+
+	__PACKAGE__->import;
+
+A subclass of L<Context::Singleton> can declare a C<DEFAULT_FRAME_CLASS> constant
+to specify which L<Context::Singleton::Frame> (sub)class its exported functions
+operate on, without requiring every caller to pass C<frame_class> explicitly.
+
+C<frame_class> passed at C<use> time still takes precedence over
+C<DEFAULT_FRAME_CLASS>:
+
+	use My::Context::Singleton;                                     # uses My::Frame
+	use My::Context::Singleton { frame_class => q (Other::Frame) }; # uses Other::Frame
+
+See L<Context::Singleton::Frame/EXTENDING FRAME> for how to implement a custom
+frame class.
 
 =head1 TUTORIAL
 
@@ -298,7 +321,7 @@ https://github.com/happy-barney/perl-Context-Singleton
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENSE
 

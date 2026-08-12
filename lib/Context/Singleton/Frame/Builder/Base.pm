@@ -10,37 +10,37 @@ use Moo;
 
 use namespace::clean;
 
-has '_default'
-	=> is       => 'ro'
-	=> init_arg => 'default'
+has q (_default)
+	=> is       => q (ro)
+	=> init_arg => q (default)
 	=> default  => sub { +{} }
-;
-
-has 'this'
-	=> is       => 'ro'
 	;
 
-has 'dep'
-	=> is       => 'ro'
+has q (this)
+	=> is       => q (ro)
 	;
 
-has 'as'
-	=> is       => 'ro'
-	=> predicate => 'has_as'
+has q (dep)
+	=> is       => q (ro)
 	;
 
-has 'call'
-	=> is       => 'ro'
-	=> predicate => 'has_call'
+has q (as)
+	=> is       => q (ro)
+	=> predicate => q (has_as)
 	;
 
-has 'builder'
-	=> is       => 'ro'
-	=> predicate => 'has_builder'
+has q (call)
+	=> is       => q (ro)
+	=> predicate => q (has_call)
 	;
 
-has '_required'
-	=> is       => 'ro'
+has q (builder)
+	=> is       => q (ro)
+	=> predicate => q (has_builder)
+	;
+
+has q (_required)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { [ List::Util::uniq $_[0]->_build_required ] }
@@ -83,12 +83,14 @@ sub build {
 	my @args = $self->build_callback_args ($resolved);
 
 	return $self->as->(@args)
-		if $self->has_as;
+		if $self->has_as
+		;
 
 	my $this = shift @args;
 
 	return $this->can ($self->call)->(@args)
-		if $self->has_call;
+		if $self->has_call
+		;
 
 	return $this->${\ $self->builder } (@args);
 }
@@ -117,7 +119,7 @@ This is internal package.
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

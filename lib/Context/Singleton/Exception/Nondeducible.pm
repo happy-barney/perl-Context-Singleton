@@ -9,7 +9,7 @@ use Exception::Class ( __PACKAGE__ );
 sub new {
 	my ($self, $singleton) = @_;
 
-	$self->SUPER::new (error => "Cannot deduce: $singleton");
+	$self->SUPER::new (error => qq (Cannot deduce: $singleton));
 }
 
 1;
@@ -30,7 +30,7 @@ This exception is thrown when singleton value cannot be deduced
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

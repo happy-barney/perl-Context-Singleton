@@ -4,31 +4,31 @@ use v5.10;
 use strict;
 use warnings;
 
-use require::relative "test-helper.pl";
+use require::relative q (test-helper.pl);
 
 plan tests => 3;
 
-contrive 'dependency'
-	=> value    => 'with-dependency'
+contrive q (dependency)
+	=> value    => q (with-dependency)
 	;
 
-contrive 'with-array-dependencies'
+contrive q (with-array-dependencies)
 	=> dep      => [qw[ dependency ]]
 	=> as       => sub { [ @_ ] }
 	;
 
-contrive 'without-dep'
-	=> as       => sub { 'without-dependencies' }
+contrive q (without-dep)
+	=> as       => sub { q (without-dependencies) }
 	;
 
-it "should pass resolved dependencies as positional arguments"
-	=> got      => sub { deduce 'with-array-dependencies' }
-	=> expect   => [ 'with-dependency' ]
+it q (should pass resolved dependencies as positional arguments)
+	=> got      => sub { deduce q (with-array-dependencies) }
+	=> expect   => [ q (with-dependency) ]
 	;
 
-it "should not need empty arrayref to deduce subroutine without dependencies"
-	=> got      => sub { deduce 'without-dep' }
-	=> expect   => 'without-dependencies'
+it q (should not need empty arrayref to deduce subroutine without dependencies)
+	=> got      => sub { deduce q (without-dep) }
+	=> expect   => q (without-dependencies)
 	;
 
 had_no_warnings;

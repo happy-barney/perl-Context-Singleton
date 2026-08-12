@@ -9,18 +9,20 @@ use Moo;
 
 use namespace::clean;
 
-has 'frame'
-	=> is       => 'ro'
+has q (frame)
+	=> is       => q (ro)
 	=> weak_ref => 1
 	=> handles  => [
-		'depth',
-		'db',
+		q (depth),
+		q (db),
 	];
 
 sub parent {
 	my ($deducer) = @_;
 
-	return unless $deducer->frame->parent;
+	return
+		unless $deducer->frame->parent
+		;
 	return $deducer->frame->parent->_deducer;
 }
 

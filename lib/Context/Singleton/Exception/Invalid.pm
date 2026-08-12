@@ -9,7 +9,7 @@ use Exception::Class ( __PACKAGE__ );
 sub new {
 	my ($self, @params) = @_;
 
-	$self->SUPER::new (error => 'Invalid value', @params);
+	$self->SUPER::new (error => q (Invalid value), @params);
 }
 
 1;
@@ -30,7 +30,7 @@ This exception is thrown when invalid value is provided
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

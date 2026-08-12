@@ -16,95 +16,93 @@ use Context::Singleton::Frame::Deducer::Notifying;
 use namespace::clean;
 
 use overload (
-	'""' => sub { ref ($_[0]) . '[' . $_[0]->depth . ']' },
+	q ("") => sub { ref ($_[0]) . q ([) . $_[0]->depth . q (]) },
 	fallback => 1,
 );
 
-has '_deducer_class'
-	=> is       => 'ro'
+__PACKAGE__->_generate_frame_class_internals;
+
+has q (_deducer_class)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::Deducer::Notifying:: }
 	;
 
-has '_deducer'
-	=> is       => 'ro'
+has q (_deducer)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->root_frame->_deducer_class->new (frame => $_[0]) }
 	=> handles  => [
-		'is_deduced',
-		'is_deducible',
-		'try_deduce',
+		q (is_deducible),
 	];
 
-has 'db'
-	=> is       => 'ro'
+has q (db)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->db : $_[0]->db_class->instance }
 	;
 
-has 'db_class'
-	=> is       => 'ro'
+has q (db_class)
+	=> is       => q (ro)
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::DB:: }
 	;
 
-has 'depth'
-	=> is       => 'ro'
+has q (depth)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->depth + 1 : 0 }
 	;
 
-has 'parent'
-	=> is       => 'ro'
+has q (parent)
+	=> is       => q (ro)
 	;
 
-has 'root_frame'
-	=> is       => 'ro'
+has q (root_frame)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->root_frame : $_[0] }
 	;
 
-sub build_frame {
-	my ($class, %proclaim) = @_;
+sub _effective_frame {
+	my $frame = shift;
 
-	my $frame = $class->new (
-		(parent => $class) x !! ref $class,
-	);
-
-	$frame->proclaim (%proclaim);
-
-	return $frame;
-}
-
-sub debug {
-	my ($frame, @message) = @_;
-
-	my $sub = (caller(1))[3];
-	$sub =~ s/^.*://;
-
-	use feature 'say';
-	say "# [${\ $frame->depth}] $sub ${\ join ' ', @message }";
+	ref ($frame) ? $frame : $frame->current_frame;
 }
 
 sub _frame_by_depth {
 	my ($frame, $depth) = @_;
 
-	return if $depth < 0;
+	return
+		if $depth < 0
+		;
 
 	my $distance = $frame->depth - $depth;
-	return if $distance < 0;
+	return
+		if $distance < 0
+		;
 
 	my $found = $frame;
 
 	$found = $found->parent
-		while $distance-- > 0;
+		while $distance-- > 0
+		;
 
 	$found;
+}
+
+sub _generate_frame_class_internals {
+	my ($class) = @_;
+
+	my $current_frame = [ $class->build_frame ];
+
+	no strict q (refs);
+	*{"${class}::_localisable_current_frame"} = sub { $current_frame };
 }
 
 sub _throw_deduced {
@@ -119,35 +117,77 @@ sub _throw_nondeducible {
 	throw Context::Singleton::Exception::Nondeducible ($singleton);
 }
 
+sub build_frame {
+	my ($class, %proclaim) = @_;
+
+	my $frame = ref ($class)
+		? $class->new (parent => $class)
+		: $class->new
+		;
+
+	$frame->proclaim (%proclaim);
+
+	return $frame;
+}
+
 sub contrive {
-	my ($frame, $singleton, @how) = @_;
-
-	$frame->db->contrive ($singleton, @how);
+	(&_effective_frame)->db->contrive (@_);
 }
 
-sub load_rules {
-	shift->db->load_rules (@_);
+sub contrive_class {
+	(&_effective_frame)->db->contrive_class (@_);
 }
 
-sub trigger {
-	shift->db->trigger (@_);
+sub current_frame {
+	shift->_localisable_current_frame->[0];
+}
+
+sub debug {
+	my ($frame, @message) = @_;
+
+	my $sub = (caller(1))[3];
+	$sub =~ s/^.*://;
+
+	use feature q (say);
+	say qq (# [${\ $frame->depth}] $sub ${\ join ' ', @message });
 }
 
 sub deduce {
-	my ($frame, $singleton, @proclaim) = @_;
+	my ($frame, $singleton, @proclaim) = (&_effective_frame, @_);
 
-	$frame = $frame->new (@proclaim) if @proclaim;
+	$frame = $frame->new (@proclaim)
+		if @proclaim
+		;
 
 	$frame->_throw_nondeducible ($singleton)
-		unless $frame->try_deduce ($singleton);
+		unless $frame->try_deduce ($singleton)
+		;
 
 	$frame->_deducer->deduce ($singleton);
 }
 
-sub proclaim {
-	my ($frame, @proclaim) = @_;
+sub frame {
+	my ($frame, $code) = (&_effective_frame, @_);
 
-	return unless @proclaim;
+	local $frame->_localisable_current_frame->[0] = $frame->build_frame;
+
+	$code->();
+}
+
+sub is_deduced {
+	(&_effective_frame)->_deducer->is_deduced (@_);
+}
+
+sub load_rules {
+	(&_effective_frame)->db->load_rules (@_);
+}
+
+sub proclaim {
+	my ($frame, @proclaim) = (&_effective_frame, @_);
+
+	return
+		unless @proclaim
+		;
 
 	my $retval;
 	while (@proclaim) {
@@ -155,12 +195,21 @@ sub proclaim {
 		my $value = shift @proclaim;
 
 		$frame->_throw_deduced ($singleton)
-			if $frame->is_deduced ($singleton);
+			if $frame->is_deduced ($singleton)
+			;
 
 		$retval = $frame->_deducer->proclaim ($singleton, $value);
 	}
 
 	$retval;
+}
+
+sub trigger {
+	(&_effective_frame)->db->trigger (@_);
+}
+
+sub try_deduce {
+	(&_effective_frame)->_deducer->try_deduce (@_);
 }
 
 1;
@@ -179,9 +228,51 @@ Context::Singleton::Frame - Internal representation of Context::Singleton's fram
 
 This is internal package.
 
+=head1 EXTENDING FRAME
+
+Each L<Context::Singleton::Frame> (sub)class tracks its own current I<frame>,
+so alternate implementations - e.g. selected via
+C<< use Context::Singleton { frame_class => q (My::Frame) } >> - don't
+interfere with L<Context::Singleton::Frame>'s (or each other's) state.
+
+=head2 _generate_frame_class_internals ()
+
+	package My::Frame;
+	use Moo;
+	BEGIN { extends q (Context::Singleton::Frame) }
+	BEGIN { __PACKAGE__->_generate_frame_class_internals }
+
+Installs a C<_localisable_current_frame> method into the calling class,
+backed by its own arrayref slot holding the current I<frame> instance.
+
+C<current_frame ()> and C<frame {}> both resolve C<_localisable_current_frame>
+through regular method dispatch, so:
+
+=over
+
+=item *
+
+A class calling C<_generate_frame_class_internals> gets its own current
+I<frame>, independent of its parent class.
+
+=item *
+
+A subclass which doesn't call it inherits its parent's
+C<_localisable_current_frame> and therefore shares its parent's current
+I<frame>.
+
+=back
+
+L<Context::Singleton::Frame> calls C<_generate_frame_class_internals> on
+itself when the module is loaded, so it always has its own state, even
+before any subclass exists.
+
+An optional frame (or class) to seed the slot with may be passed; it defaults
+to the invocant.
+
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

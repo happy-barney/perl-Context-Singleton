@@ -8,10 +8,10 @@ use Moo;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Builder::Base' }
+BEGIN { extends q (Context::Singleton::Frame::Builder::Base) }
 
-has 'value'
-	=> is       => 'ro'
+has q (value)
+	=> is       => q (ro)
 	;
 
 sub build {
@@ -38,7 +38,7 @@ This is internal package.
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

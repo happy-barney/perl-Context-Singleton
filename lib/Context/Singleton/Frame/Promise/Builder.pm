@@ -8,17 +8,18 @@ use Moo;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Promise' }
+BEGIN { extends q (Context::Singleton::Frame::Promise) }
 
-has 'builder'
-	=> is       => 'ro'
+has q (builder)
+	=> is       => q (ro)
 	;
 
 sub notify_deducible {
 	my ($self, $in_depth) = @_;
 
 	$self->set_deducible ($in_depth)
-		if $self->deducible_dependencies == $self->dependencies;
+		if $self->deducible_dependencies == $self->dependencies
+		;
 }
 
 1;
@@ -39,7 +40,7 @@ This is internal package.
 
 =head1 AUTHOR
 
-Branislav Zahradník <barney@cpan.org>
+Branislav Zahradník <barney.cpan@gmail.com>
 
 =head1 COPYRIGHT AND LICENCE
 

@@ -24,7 +24,7 @@ use Path::Tiny;
 use Ref::Util;
 use Safe::Isa;
 
-use lib Path::Tiny->new (__FILE__)->parent->child ('lib')->realpath->stringify;
+use lib Path::Tiny->new (__FILE__)->parent->child (q (lib))->realpath->stringify;
 
 use Context::Singleton;
 
@@ -41,16 +41,17 @@ sub it {
 
 		unless ($lives) {
 			return Test::Deep::cmp_deeply $error, $params{throws}, $title
-				if exists $params{throws};
+				if exists $params{throws}
+				;
 
 			fail $title;
-			diag "Expected to live by died with:", explain $error;
+			diag q (Expected to live by died with:), explain $error;
 			return;
 		}
 
 		if (exists $params{throws}) {
 			fail $title;
-			diag "Expected to die but lived";
+			diag q (Expected to die but lived);
 			return;
 		}
 
@@ -58,7 +59,8 @@ sub it {
 	}
 
 	return Test::More::ok (($got xor $expect->{val}), $title)
-		if $expect->$_isa (Test::Deep::Boolean::);
+		if $expect->$_isa (Test::Deep::Boolean::)
+		;
 
 	Test::Deep::cmp_deeply $got, $expect, $title;
 }
