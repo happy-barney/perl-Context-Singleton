@@ -29,22 +29,17 @@ sub _exported_accessors {
 
 	state %cache;
 
-	return $cache{$frame_class} //= do {
-		my $current_frame = qq (\$Context::Singleton::__::${frame_class}::current_frame);
-		eval qq ($current_frame = $frame_class->build_frame);
-
-		+{
-			contrive        => eval qq (sub { $current_frame->contrive (\@_) }),
-			contrive_class  => eval qq (sub { $current_frame->db->contrive_class (\@_) }),
-			current_frame   => eval qq (sub { $current_frame }),
-			deduce          => eval qq (sub { $current_frame->deduce (\@_) }),
-			frame           => eval qq (sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };),
-			is_deduced      => eval qq (sub { $current_frame->is_deduced (\@_) }),
-			load_rules      => eval qq (sub { $current_frame->load_rules (\@_) }),
-			proclaim        => eval qq (sub { $current_frame->proclaim (\@_) }),
-			trigger         => eval qq (sub { $current_frame->trigger (\@_) }),
-			try_deduce      => eval qq (sub { $current_frame->try_deduce (\@_) }),
-		};
+	return $cache{$frame_class} //= +{
+		contrive        => eval qq (sub { $frame_class->contrive (\@_) }),
+		contrive_class  => eval qq (sub { $frame_class->contrive_class (\@_) }),
+		current_frame   => eval qq (sub { $frame_class->current_frame }),
+		deduce          => eval qq (sub { $frame_class->deduce (\@_) }),
+		frame           => eval qq (sub (&) { $frame_class->frame (\$_[0]); };),
+		is_deduced      => eval qq (sub { $frame_class->is_deduced (\@_) }),
+		load_rules      => eval qq (sub { $frame_class->load_rules (\@_) }),
+		proclaim        => eval qq (sub { $frame_class->proclaim (\@_) }),
+		trigger         => eval qq (sub { $frame_class->trigger (\@_) }),
+		try_deduce      => eval qq (sub { $frame_class->try_deduce (\@_) }),
 	};
 }
 

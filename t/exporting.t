@@ -14,6 +14,7 @@ use Shared::Example::Context::Singleton (
 package Child::Frame;
 use Moo;
 BEGIN { extends q (Context::Singleton::Frame) }
+BEGIN { __PACKAGE__->_generate_frame_class_internals }
 
 package main;
 
