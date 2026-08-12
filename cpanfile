@@ -30,10 +30,12 @@ on 'test' => sub {
   requires "Safe::Isa" => "0";
   requires "Sub::Install" => "0";
   requires "Sub::Name" => "0";
+  requires "Test::Fatal"                  => $] < 5.012 ? "'==0.017" : (),
   requires "Sub::Override" => "0";
   requires "Sub::Uplevel" => "0";
   requires "Syntax::Construct" => "0";
-  requires "Test::Deep" => "0";
+  requires "Test::Deep"                   => $] < 5.012 ? "==1.130" : ();
+  requires "Data::OptList"                => $] < 5.012 ? "==0.113" : ();
   requires "Test::Deep::Cmp" => "0";
   requires "Test::Exception" => "0";
   requires "Test::More" => "0.94";
