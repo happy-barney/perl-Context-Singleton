@@ -88,12 +88,14 @@ sub add_listeners {
 		};
 
 		$entry->{next}{prev} = $head->{next}
-			if $entry->{next};
+			if $entry->{next}
+			;
 
 		Scalar::Util::weaken $entry->{listener};
 
 		$self->_notify_listener ($entry->{listener})
-			if $self->is_deducible;
+			if $self->is_deducible
+			;
 	}
 
 	$self;
@@ -119,7 +121,9 @@ sub add_dependencies {
 		#Scalar::Util::weaken ($self->_dependencies->[-1]);
 	}
 
-	$_->add_listeners ($self) for @new_dependencies;
+	$_->add_listeners ($self)
+		for @new_dependencies
+		;
 
 	$self;
 }
@@ -137,7 +141,9 @@ sub deducible_dependencies {
 sub _broadcast_deducible {
 	my ($self) = @_;
 
-	return unless $self->is_deducible;
+	return
+		unless $self->is_deducible
+		;
 
 	my $head = $self->_listeners;
 	while ($head = $head->{next}) {
@@ -145,7 +151,8 @@ sub _broadcast_deducible {
 			# obsoleted weak listener
 			$head->{prev}{next} = $head->{next};
 			$head->{next}{prev} = $head->{prev}
-				if $head->{next};
+				if $head->{next}
+				;
 			next;
 		}
 

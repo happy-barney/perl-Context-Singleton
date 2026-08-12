@@ -60,7 +60,8 @@ sub _exporter_validate_opts {
 	$class->SUPER::_exporter_validate_opts(@_);
 
 	_exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
-		if $globals->{load_path};
+		if $globals->{load_path}
+		;
 }
 
 1;

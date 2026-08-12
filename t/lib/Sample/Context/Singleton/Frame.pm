@@ -62,7 +62,9 @@ sub BUILD {
 
 	$self->db->trigger (with_trigger => sub {
 		my $copy = q (copy_trigger);
-		$self->proclaim ($copy, $_[0]) unless $self->is_deduced ($copy);
+		$self->proclaim ($copy, $_[0])
+			unless $self->is_deduced ($copy)
+			;
 	});
 
 	$self->proclaim (q (Calc), q (Sample::Context::Singleton::Frame::003::Calc));
@@ -131,7 +133,9 @@ sub BUILD {
 
 	$self->db->trigger (with_trigger => sub {
 		my $copy = q (copy_trigger);
-		$self->proclaim ($copy, $_[0]) unless $self->is_deduced ($copy);
+		$self->proclaim ($copy, $_[0])
+			unless $self->is_deduced ($copy)
+			;
 	});
 }
 

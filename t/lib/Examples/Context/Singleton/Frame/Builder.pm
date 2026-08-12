@@ -19,7 +19,8 @@ example expect_required => as {
 	my $expect = $params{expect} // [];
 
 	$expect = bag (@$expect)
-		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect);
+		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect)
+		;
 
 	test_list_method $title => (
 		method => q (required),
@@ -38,7 +39,8 @@ example expect_unresolved => as {
 	my $expect = $params{expect} // [];
 
 	$expect = bag (@$expect)
-		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect);
+		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect)
+		;
 
 	test_list_method $title => (
 		method => q (unresolved),

@@ -18,7 +18,9 @@ sub build {
 
 	my $class = shared->class;
 
-	return unless $class;
+	return
+		unless $class
+		;
 
 	$class->new( @params );
 }
@@ -28,7 +30,9 @@ sub behaves_like_method {
 	Hash::Util::lock_keys %params, qw[ object method method_args throws expect expected ];
 
 	$params{object} //= shared->object;
-	$params{expect} = $params{expected} if exists $params{expected};
+	$params{expect} = $params{expected}
+		if exists $params{expected}
+		;
 
 	test_method $title => (
 		object => $params{object},
@@ -38,7 +42,9 @@ sub behaves_like_method {
 }
 
 sub expect_deduced {
-	my $title = shift if @_ % 2;
+	my $title = shift
+		if @_ % 2
+		;
 
 	shared->method = q (is_deduced);
 	shared->method_args = [];
@@ -48,7 +54,9 @@ sub expect_deduced {
 
 	$params{expect} //= bool (1);
 
-	$title //= q (shoud throw) if $params{throws};
+	$title //= q (shoud throw)
+		if $params{throws}
+		;
 	$title //= qq (should ${\ (eq_deeply (0, $params{expect}) ? 'not ' : '') }be resolved);
 
 	behaves_like_method $title => %params;
@@ -59,7 +67,9 @@ sub expect_not_deduced {
 }
 
 sub expect_deducible {
-	my $title = shift if @_ % 2;
+	my $title = shift
+		if @_ % 2
+		;
 
 	shared->method = q (is_deducible);
 	shared->method_args = [];
@@ -69,7 +79,9 @@ sub expect_deducible {
 
 	$params{expect} //= bool (1);
 
-	$title //= q (shoud throw) if $params{throws};
+	$title //= q (shoud throw)
+		if $params{throws}
+		;
 	$title //= qq (should ${\ (eq_deeply (0, $params{expect}) ? 'not ' : '') }be resolvable);
 
 	behaves_like_method $title => %params;
@@ -80,7 +92,9 @@ sub expect_not_deducible {
 }
 
 sub expect_deduced_in_depth {
-	my $title = shift if @_ % 2;
+	my $title = shift
+		if @_ % 2
+		;
 
 	shared->method = q (deduced_in_depth);
 	shared->method_args = [];
@@ -94,7 +108,9 @@ sub expect_deduced_in_depth {
 }
 
 sub expect_value {
-	my $title = shift if @_ % 2;
+	my $title = shift
+		if @_ % 2
+		;
 
 	shared->method = q (value);
 	shared->method_args = [];
@@ -108,7 +124,9 @@ sub expect_value {
 }
 
 sub expect_deducible_builder {
-	my $title = shift if @_ % 2;
+	my $title = shift
+		if @_ % 2
+		;
 
 	shared->method = q (deducible_builder);
 	shared->method_args = [];

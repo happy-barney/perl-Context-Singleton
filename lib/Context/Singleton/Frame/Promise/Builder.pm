@@ -18,7 +18,8 @@ sub notify_deducible {
 	my ($self, $in_depth) = @_;
 
 	$self->set_deducible ($in_depth)
-		if $self->deducible_dependencies == $self->dependencies;
+		if $self->deducible_dependencies == $self->dependencies
+		;
 }
 
 1;

@@ -58,7 +58,9 @@ sub instance {
 sub contrive_class {
 	my ($db, $name) = @_;
 
-	return if exists $db->cache->{$name};
+	return
+		if exists $db->cache->{$name}
+		;
 
 	$db->contrive ($name, (
 		dep => [ q (class_loader) ],
@@ -71,8 +73,12 @@ sub contrive_class {
 sub _guess_builder_class {
 	my ($db, $def) = @_;
 
-	return q (Context::Singleton::Frame::Builder::Value) if exists $def->{value};
-	return q (Context::Singleton::Frame::Builder::Hash)  if Ref::Util::is_hashref ($def->{dep});
+	return q (Context::Singleton::Frame::Builder::Value)
+		if exists $def->{value}
+		;
+	return q (Context::Singleton::Frame::Builder::Hash)
+		if Ref::Util::is_hashref ($def->{dep})
+		;
 	return q (Context::Singleton::Frame::Builder::Array)
 }
 

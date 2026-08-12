@@ -32,11 +32,15 @@ example it_should_not_know_about_rule => as {
 example it_should_load_rules => as {
 	my ($title, %params) = @_;
 
-	it_should_not_know_about_rule (rule => $_) for @{ $params{rules} };
+	it_should_not_know_about_rule (rule => $_)
+		for @{ $params{rules} }
+		;
 
 	$params{loader}->();
 
-	it_should_know_about_rule (rule => $_) for @{ $params{rules} };
+	it_should_know_about_rule (rule => $_)
+		for @{ $params{rules} }
+		;
 };
 
 example it_should_resolve_rule => as {

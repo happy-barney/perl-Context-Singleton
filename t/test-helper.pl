@@ -41,7 +41,8 @@ sub it {
 
 		unless ($lives) {
 			return Test::Deep::cmp_deeply $error, $params{throws}, $title
-				if exists $params{throws};
+				if exists $params{throws}
+				;
 
 			fail $title;
 			diag q (Expected to live by died with:), explain $error;
@@ -58,7 +59,8 @@ sub it {
 	}
 
 	return Test::More::ok (($got xor $expect->{val}), $title)
-		if $expect->$_isa (Test::Deep::Boolean::);
+		if $expect->$_isa (Test::Deep::Boolean::)
+		;
 
 	Test::Deep::cmp_deeply $got, $expect, $title;
 }

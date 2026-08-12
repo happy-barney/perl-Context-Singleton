@@ -67,12 +67,15 @@ sub example {
 	my $default_title = $name;
 	$default_title =~ s/_/ /g;
 
-	@_ = ($name, sub { unshift @_, $default_title unless @_ % 2; goto $coderef });
+	@_ = ($name, sub { unshift @_, $default_title
+		unless @_ % 2; goto $coderef });
 	goto &export;
 }
 
 sub shared (;$) : lvalue {
-	return $context_accessor unless @_;
+	return $context_accessor
+		unless @_
+		;
 
 	$context{$_[0]};
 }
@@ -160,7 +163,8 @@ export test_method => as {
 
 	Hash::Util::lock_keys %params,
 		qw[ method method_args method_wantarray method_wanthash ],
-		qw[ object throws expect ], @args;
+		qw[ object throws expect ], @args
+		;
 
 	$params{object} //= shared->object;
 
@@ -170,19 +174,25 @@ export test_method => as {
 			? [ $params{object}->$method (@params{@args}) ]
 			: $params{object}->$method (@params{@args})
 			;
-		$value = { @$value } if $wanthash;
+		$value = { @$value }
+			if $wanthash
+			;
 		1
 	};
 	$error = $@;
 
-	return it ($title => as { throws_ok { die $error unless $lives_ok } $params{throws}})
-		if $params{throws};
+	return it ($title => as { throws_ok { die $error
+		unless $lives_ok } $params{throws}})
+		if $params{throws}
+		;
 
 	return it (qq (should not throw - $title) => as { lives_ok { die $error } })
-		unless $lives_ok;
+		unless $lives_ok
+		;
 
 	return it ($title => as { pass })
-		unless exists $params{expect};
+		unless exists $params{expect}
+		;
 
 	return it ($title => as { cmp_deeply $value, $params{expect} });
 };
@@ -211,10 +221,12 @@ example expect_instance_of => as {
 
 	it (qq (is instance of $params{class}) => as {
 		return fail (q (instance is not an object))
-			unless Scalar::Util::blessed ($params{object});
+			unless Scalar::Util::blessed ($params{object})
+			;
 
 		return fail (qq (instance is not of $params{class}))
-			unless $params{object}->isa ($params{class});
+			unless $params{object}->isa ($params{class})
+			;
 
 		return pass;
 	});
@@ -231,16 +243,20 @@ example it_should_build_instance => as {
 	$lives_ok = eval { $value = $params{class}->new (@{ $params{args} }); 1 };
 	$error = $@;
 
-	return it ($title => as { throws_ok { die $error unless $lives_ok } $params{throws}})
-		if $params{throws};
+	return it ($title => as { throws_ok { die $error
+		unless $lives_ok } $params{throws}})
+		if $params{throws}
+		;
 
 	return it (qq (should not throw - $title) => as { lives_ok { die $error } })
-		unless $lives_ok;
+		unless $lives_ok
+		;
 
 	shared->object = $value;
 
 	return it ($title => as { expect_instance_of (class => $params{class}) })
-		unless exists $params{expect};
+		unless exists $params{expect}
+		;
 
 	return it ($title => as { cmp_deeply $value, $params{expect} });
 };

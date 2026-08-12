@@ -14,7 +14,7 @@ has q (_default)
 	=> is       => q (ro)
 	=> init_arg => q (default)
 	=> default  => sub { +{} }
-;
+	;
 
 has q (this)
 	=> is       => q (ro)
@@ -83,12 +83,14 @@ sub build {
 	my @args = $self->build_callback_args ($resolved);
 
 	return $self->as->(@args)
-		if $self->has_as;
+		if $self->has_as
+		;
 
 	my $this = shift @args;
 
 	return $this->can ($self->call)->(@args)
-		if $self->has_call;
+		if $self->has_call
+		;
 
 	return $this->${\ $self->builder } (@args);
 }

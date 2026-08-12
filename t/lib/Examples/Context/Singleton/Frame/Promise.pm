@@ -27,7 +27,8 @@ BEGIN {
 
 		$params{expected} //= expect_true;
 		$params{expected} = bool ($params{expected})
-			unless is_test_deep_comparision $params{expected};
+			unless is_test_deep_comparision $params{expected}
+			;
 
 		eq_deeply $params{promise}->is_resolved, $params{expected};
 	};
@@ -37,25 +38,32 @@ BEGIN {
 	};
 
 	export expect_resolvable => as {
-		my $title = shift if @_ % 2;
+		my $title = shift
+			if @_ % 2
+			;
 
 		my %params = @_;
 		Hash::Util::lock_keys %params, qw[ object throws expected ];
 
 		$params{expected} //= expect_true;
 
-		$title //= q (shoud throw) if $params{throws};
+		$title //= q (shoud throw)
+			if $params{throws}
+			;
 		$title //= qq (should ${\ (eq_deeply (0, $params{expected}) ? 'not ' : '') }be resolvable);
 
 		my $got;
 		my $lives_ok = eval { $got = $params{object}->is_resolvable; 1 };
 		my $error = $@;
 
-		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, q () }
-			if exists $params{throws};
+		return it $title => as { throws_ok { die $error
+			unless $lives_ok } $params{throws}, q () }
+			if exists $params{throws}
+			;
 
 		return it qq (should not throw ($title)) => as { lives_ok { die $error } }
-			unless $lives_ok;
+			unless $lives_ok
+			;
 
 		it $title => as { cmp_deeply $got, $params{expected} };
 	};
@@ -65,7 +73,9 @@ BEGIN {
 	};
 
 	export expect_in_depth => as {
-		my $title = shift if @_ % 2;
+		my $title = shift
+			if @_ % 2
+			;
 		$title //= q (should be resolvable in depth);
 
 		my (%params) = @_;
@@ -76,11 +86,14 @@ BEGIN {
 		my $lives_ok = eval { $got = $params{object}->in_depth; 1 };
 		my $error = $@;
 
-		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, q () }
-			if exists $params{throws};
+		return it $title => as { throws_ok { die $error
+			unless $lives_ok } $params{throws}, q () }
+			if exists $params{throws}
+			;
 
 		return it qq (should not throw ($title)) => as { lives_ok { die $error } }
-			unless $lives_ok;
+			unless $lives_ok
+			;
 
 		it $title => as { cmp_deeply $got, $params{expected} };
 	};

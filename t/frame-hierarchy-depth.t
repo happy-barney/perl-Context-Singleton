@@ -23,7 +23,7 @@ frame {
 		it q (depth of another child frame should be 2)
 			=> got    => current_frame->depth
 			=> expect => 2
-		;
+			;
 	};
 
 	it q (after returning back current frame depth should be 1 again)

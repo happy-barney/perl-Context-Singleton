@@ -94,15 +94,20 @@ sub debug {
 sub _frame_by_depth {
 	my ($frame, $depth) = @_;
 
-	return if $depth < 0;
+	return
+		if $depth < 0
+		;
 
 	my $distance = $frame->depth - $depth;
-	return if $distance < 0;
+	return
+		if $distance < 0
+		;
 
 	my $found = $frame;
 
 	$found = $found->parent
-		while $distance-- > 0;
+		while $distance-- > 0
+		;
 
 	$found;
 }
@@ -136,10 +141,13 @@ sub trigger {
 sub deduce {
 	my ($frame, $singleton, @proclaim) = @_;
 
-	$frame = $frame->new (@proclaim) if @proclaim;
+	$frame = $frame->new (@proclaim)
+		if @proclaim
+		;
 
 	$frame->_throw_nondeducible ($singleton)
-		unless $frame->try_deduce ($singleton);
+		unless $frame->try_deduce ($singleton)
+		;
 
 	$frame->_deducer->deduce ($singleton);
 }
@@ -147,7 +155,9 @@ sub deduce {
 sub proclaim {
 	my ($frame, @proclaim) = @_;
 
-	return unless @proclaim;
+	return
+		unless @proclaim
+		;
 
 	my $retval;
 	while (@proclaim) {
@@ -155,7 +165,8 @@ sub proclaim {
 		my $value = shift @proclaim;
 
 		$frame->_throw_deduced ($singleton)
-			if $frame->is_deduced ($singleton);
+			if $frame->is_deduced ($singleton)
+			;
 
 		$retval = $frame->_deducer->proclaim ($singleton, $value);
 	}

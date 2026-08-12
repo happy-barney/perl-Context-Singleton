@@ -20,7 +20,9 @@ has q (frame)
 sub parent {
 	my ($deducer) = @_;
 
-	return unless $deducer->frame->parent;
+	return
+		unless $deducer->frame->parent
+		;
 	return $deducer->frame->parent->_deducer;
 }
 
