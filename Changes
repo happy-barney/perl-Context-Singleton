@@ -2,6 +2,18 @@ Revision history for Context::Singleton
 
 {{$NEXT}}
 
+    Move Context::Singleton's implementation into Context::Singleton::Frame
+
+    Simplify Context::Singleton::Frame subclassing
+
+    Simplify Context::Singleton subclassing
+
+    Expose contrive_class as public API
+
+    Rewrite internals
+
+    Documentation improvements
+
 1.0.2   2018-08-31
 
     Employ Exporter::Tiny
