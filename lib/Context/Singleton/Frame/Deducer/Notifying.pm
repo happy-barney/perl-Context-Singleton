@@ -13,24 +13,24 @@ use Context::Singleton::Frame::Promise::Rule;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Deducer' }
+BEGIN { extends q (Context::Singleton::Frame::Deducer) }
 
-has '_class_builder_promise'
-	=> is       => 'ro'
+has q (_class_builder_promise)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::Promise::Builder:: }
 	;
 
-has '_class_rule_promise'
-	=> is       => 'ro'
+has q (_class_rule_promise)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::Promise::Rule:: }
 	;
 
-has 'promises'
-	=> is       => 'ro'
+has q (promises)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +{} }
 	;

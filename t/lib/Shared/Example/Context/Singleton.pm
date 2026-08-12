@@ -9,7 +9,7 @@ package Shared::Example::Context::Singleton;
 
 our $VERSION = v1.0.0;
 
-use parent 'Exporter::Tiny';
+use parent q (Exporter::Tiny);
 
 our @EXPORT = (
 	qw[ it_should_export ],
@@ -24,7 +24,7 @@ require Context::Singleton;
 sub it_should_export {
 	my ($name) = @_;
 
-	ok caller->can ($name), "it should export $name";
+	ok caller->can ($name), qq (it should export $name);
 }
 
 sub it_should_know_about_rule {
@@ -42,7 +42,7 @@ sub it_should_know_about_rule {
 
 	my $status = $db->search_builder_for ($params{singleton});
 
-	ok $status, "should know builder(s) for singleton $params{singleton}";
+	ok $status, qq (should know builder(s) for singleton $params{singleton});
 };
 
 1;

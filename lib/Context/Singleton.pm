@@ -2,11 +2,11 @@
 use v5.10;
 use strict;
 use warnings;
-use feature 'state';
+use feature q (state);
 
 package Context::Singleton;
 
-use parent 'Exporter::Tiny';
+use parent q (Exporter::Tiny);
 
 use Context::Singleton::Frame;
 
@@ -25,25 +25,25 @@ our @EXPORT = (
 
 sub _exported_accessors {
 	my ($globals) = @_;
-	my $frame_class = $globals->{frame_class} // 'Context::Singleton::Frame';
+	my $frame_class = $globals->{frame_class} // q (Context::Singleton::Frame);
 
 	state %cache;
 
 	return $cache{$frame_class} //= do {
-		my $current_frame = "\$Context::Singleton::__::${frame_class}::current_frame";
-		eval "$current_frame = $frame_class->build_frame";
+		my $current_frame = qq (\$Context::Singleton::__::${frame_class}::current_frame);
+		eval qq ($current_frame = $frame_class->build_frame);
 
 		+{
-			contrive        => eval "sub { $current_frame->contrive (\@_) }",
-			contrive_class  => eval "sub { $current_frame->db->contrive_class (\@_) }",
-			current_frame   => eval "sub { $current_frame }",
-			deduce          => eval "sub { $current_frame->deduce (\@_) }",
-			frame           => eval "sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };",
-			is_deduced      => eval "sub { $current_frame->is_deduced (\@_) }",
-			load_rules      => eval "sub { $current_frame->load_rules (\@_) }",
-			proclaim        => eval "sub { $current_frame->proclaim (\@_) }",
-			trigger         => eval "sub { $current_frame->trigger (\@_) }",
-			try_deduce      => eval "sub { $current_frame->try_deduce (\@_) }",
+			contrive        => eval qq (sub { $current_frame->contrive (\@_) }),
+			contrive_class  => eval qq (sub { $current_frame->db->contrive_class (\@_) }),
+			current_frame   => eval qq (sub { $current_frame }),
+			deduce          => eval qq (sub { $current_frame->deduce (\@_) }),
+			frame           => eval qq (sub (&) { local $current_frame = $current_frame->build_frame; \$_[0]->(); };),
+			is_deduced      => eval qq (sub { $current_frame->is_deduced (\@_) }),
+			load_rules      => eval qq (sub { $current_frame->load_rules (\@_) }),
+			proclaim        => eval qq (sub { $current_frame->proclaim (\@_) }),
+			trigger         => eval qq (sub { $current_frame->trigger (\@_) }),
+			try_deduce      => eval qq (sub { $current_frame->try_deduce (\@_) }),
 		};
 	};
 }
@@ -164,7 +164,7 @@ Returns the value of the last I<singleton> from the argument list.
 
 =head2 deduce ()
 
-	my $var = deduce 'singleton';
+	my $var = deduce q (singleton);
 
 Returns a I<singleton> value relevant in current frame.
 
@@ -173,7 +173,7 @@ known rules or looks into parent I<frame>.
 
 =head2 load_path ()
 
-	load_path 'prefix-1', ...;
+	load_path q (prefix-1), ...;
 
 Evaluate all modules within given module prefix(es).
 Every prefix is evaluated only once.
@@ -182,13 +182,13 @@ Every prefix is evaluated only once.
 
 Defines new I<rule> how to build I<singleton> value
 
-	contrive 'name'
-		=> class   => 'Foo::Bar'
-		=> deduce  => 'singleton'
-		=> builder => 'new'
-		=> default => { singleton_1 => 'v1', ... }
-		=> dep     => [ 'singleton_2', ... ]
-		=> dep     => { param_a => 'singleton_1', ... }
+	contrive q (name)
+		=> class   => q (Foo::Bar)
+		=> deduce  => q (singleton)
+		=> builder => q (new)
+		=> default => { singleton_1 => q (v1), ... }
+		=> dep     => [ q (singleton_2), ... ]
+		=> dep     => { param_a => q (singleton_1), ... }
 		=> as      => sub { ... }
 		=> value   => 10
 	;
@@ -197,15 +197,15 @@ Defines new I<rule> how to build I<singleton> value
 
 =item value => constant
 
-	contrive 'http-request-timeout'
-    	=> value => 900
+	contrive q (http-request-timeout)
+		=> value => 900
 		;
 
 Simplest rule, just constant value.
 
 =item as => CODEREF
 
-	contrive 'ideal-body-weight-ibw'
+	contrive q (ideal-body-weight-ibw)
 		=> dep => [qw[ height gender ]]
 		=> as  => sub ($height, $gender) {
 			my $kg = 22 * ($heigth->meters - ($gender->is_woman ? 10 : 0)) ** 2;
@@ -220,14 +220,14 @@ argument (mimics method call).
 
 =item builder => method_name
 
-	contrive 'height-in-meters'
-		=> deduce  => 'height'
-		=> builder => 'meters'
+	contrive q (height-in-meters)
+		=> deduce  => q (height)
+		=> builder => q (meters)
 		;
 
-	contrive 'db-connection'
-		=> class   => 'DBI'
-		=> builder => 'connect'
+	contrive q (db-connection)
+		=> class   => q (DBI)
+		=> builder => q (connect)
 		=> dep     => [qw[ db-dsn db-user db-password db-connection-options ]]
 		;
 
@@ -252,7 +252,7 @@ See also: L<#contrive_class ()
 Calls the builder method (with dependencies) on the object available
 as a value of the given I<singleton>.
 
-	my $object = deduce ('singleton');
+	my $object = deduce q (singleton);
 	$object->$builder (@deps);
 
 =item default => { singleton => value, ... }
@@ -284,7 +284,7 @@ Passed as a list of named parameters to the builder function.
 
 =head2 contrive_class ()
 
-	contrive_class 'Class::Name';
+	contrive_class q (Class::Name);
 
 Setup autoload mechanism same as when using C<contrive> with C<class>.
 

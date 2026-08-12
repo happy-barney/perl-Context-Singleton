@@ -11,37 +11,37 @@ use Scalar::Util qw[ weaken ];
 
 use namespace::clean;
 
-has 'depth'
-	=> is       => 'ro'
+has q (depth)
+	=> is       => q (ro)
 	;
 
-has 'value'
-	=> is       => 'rw'
-	=> writer   => '_value'
-	=> predicate => 'is_deduced'
+has q (value)
+	=> is       => q (rw)
+	=> writer   => q (_value)
+	=> predicate => q (is_deduced)
 	;
 
-has 'is_deducible'
-	=> is       => 'rw'
+has q (is_deducible)
+	=> is       => q (rw)
 	=> init_arg => +undef
-	=> writer   => '_is_deducible'
+	=> writer   => q (_is_deducible)
 	=> default  => sub { 0 }
 	;
 
-has 'deduced_in_depth'
-	=> is       => 'rw'
+has q (deduced_in_depth)
+	=> is       => q (rw)
 	=> init_arg => +undef
-	=> writer   => '_deduced_in_depth'
+	=> writer   => q (_deduced_in_depth)
 	;
 
-has '_dependencies'
-	=> is       => 'ro'
+has q (_dependencies)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +[] }
 	;
 
-has '_listeners'
-	=> is       => 'ro'
+has q (_listeners)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +{} }
 	;

@@ -4,25 +4,25 @@ use v5.10;
 use strict;
 use warnings;
 
-use require::relative "test-helper.pl";
+use require::relative q (test-helper.pl);
 
 plan tests => 4;
 
 my $root = current_frame;
 
-it "root frame should return itself as a root"
+it q (root frame should return itself as a root)
 	=> got    => current_frame->root_frame
 	=> expect => shallow ($root)
 	;
 
 frame {
-	it "child frame should return a root"
+	it q (child frame should return a root)
 		=> got    => current_frame->root_frame
 		=> expect => shallow ($root)
 		;
 
 	frame {
-		it "another child frame should return a root"
+		it q (another child frame should return a root)
 			=> got    => current_frame->root_frame
 			=> expect => shallow ($root)
 			;

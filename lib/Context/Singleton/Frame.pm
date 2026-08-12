@@ -16,54 +16,54 @@ use Context::Singleton::Frame::Deducer::Notifying;
 use namespace::clean;
 
 use overload (
-	'""' => sub { ref ($_[0]) . '[' . $_[0]->depth . ']' },
+	q ("") => sub { ref ($_[0]) . q ([) . $_[0]->depth . q (]) },
 	fallback => 1,
 );
 
-has '_deducer_class'
-	=> is       => 'ro'
+has q (_deducer_class)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::Deducer::Notifying:: }
 	;
 
-has '_deducer'
-	=> is       => 'ro'
+has q (_deducer)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->root_frame->_deducer_class->new (frame => $_[0]) }
 	=> handles  => [
-		'is_deduced',
-		'is_deducible',
-		'try_deduce',
+		q (is_deduced),
+		q (is_deducible),
+		q (try_deduce),
 	];
 
-has 'db'
-	=> is       => 'ro'
+has q (db)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->db : $_[0]->db_class->instance }
 	;
 
-has 'db_class'
-	=> is       => 'ro'
+has q (db_class)
+	=> is       => q (ro)
 	=> lazy     => 1
 	=> default  => sub { Context::Singleton::Frame::DB:: }
 	;
 
-has 'depth'
-	=> is       => 'ro'
+has q (depth)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->depth + 1 : 0 }
 	;
 
-has 'parent'
-	=> is       => 'ro'
+has q (parent)
+	=> is       => q (ro)
 	;
 
-has 'root_frame'
-	=> is       => 'ro'
+has q (root_frame)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { $_[0]->parent ? $_[0]->parent->root_frame : $_[0] }
@@ -87,8 +87,8 @@ sub debug {
 	my $sub = (caller(1))[3];
 	$sub =~ s/^.*://;
 
-	use feature 'say';
-	say "# [${\ $frame->depth}] $sub ${\ join ' ', @message }";
+	use feature q (say);
+	say qq (# [${\ $frame->depth}] $sub ${\ join ' ', @message });
 }
 
 sub _frame_by_depth {

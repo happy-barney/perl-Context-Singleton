@@ -9,12 +9,12 @@ use Moo;
 
 use namespace::clean;
 
-has 'frame'
-	=> is       => 'ro'
+has q (frame)
+	=> is       => q (ro)
 	=> weak_ref => 1
 	=> handles  => [
-		'depth',
-		'db',
+		q (depth),
+		q (db),
 	];
 
 sub parent {

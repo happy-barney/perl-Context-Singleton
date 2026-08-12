@@ -24,7 +24,7 @@ use Path::Tiny;
 use Ref::Util;
 use Safe::Isa;
 
-use lib Path::Tiny->new (__FILE__)->parent->child ('lib')->realpath->stringify;
+use lib Path::Tiny->new (__FILE__)->parent->child (q (lib))->realpath->stringify;
 
 use Context::Singleton;
 
@@ -44,13 +44,13 @@ sub it {
 				if exists $params{throws};
 
 			fail $title;
-			diag "Expected to live by died with:", explain $error;
+			diag q (Expected to live by died with:), explain $error;
 			return;
 		}
 
 		if (exists $params{throws}) {
 			fail $title;
-			diag "Expected to die but lived";
+			diag q (Expected to die but lived);
 			return;
 		}
 

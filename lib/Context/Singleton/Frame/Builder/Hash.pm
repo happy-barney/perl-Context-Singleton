@@ -8,15 +8,15 @@ use Moo;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Builder::Base' }
+BEGIN { extends q (Context::Singleton::Frame::Builder::Base) }
 
-has 'dep'
-	=> is       => 'ro'
+has q (dep)
+	=> is       => q (ro)
 	=> default  => sub { +{} }
 	;
 
-has '_keys'
-	=> is       => 'ro'
+has q (_keys)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> lazy     => 1
 	=> default  => sub { [ keys %{ $_[0]->dep } ] }

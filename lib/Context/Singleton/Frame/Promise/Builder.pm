@@ -8,10 +8,10 @@ use Moo;
 
 use namespace::clean;
 
-BEGIN { extends 'Context::Singleton::Frame::Promise' }
+BEGIN { extends q (Context::Singleton::Frame::Promise) }
 
-has 'builder'
-	=> is       => 'ro'
+has q (builder)
+	=> is       => q (ro)
 	;
 
 sub notify_deducible {

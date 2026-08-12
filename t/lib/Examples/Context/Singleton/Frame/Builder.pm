@@ -22,7 +22,7 @@ example expect_required => as {
 		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect);
 
 	test_list_method $title => (
-		method => 'required',
+		method => q (required),
 		method_args => [],
 
 		object => $object,
@@ -41,8 +41,8 @@ example expect_unresolved => as {
 		if not is_test_deep_comparision ($expect) and is_plain_arrayref ($expect);
 
 	test_list_method $title => (
-		method => 'unresolved',
-		method_args => [ 'with_deduced' ],
+		method => q (unresolved),
+		method_args => [ q (with_deduced) ],
 		method_wantarray => 1,
 
 		object => $object,
@@ -56,7 +56,7 @@ example expect_dep => as {
 	Hash::Util::lock_keys %params, qw[ object expect ];
 
 	test_method $title => (
-		method => 'dep',
+		method => q (dep),
 		method_args => [],
 
 		object => $params{object} // shared->object,
@@ -69,7 +69,7 @@ example expect_default => as {
 	Hash::Util::lock_keys %params, qw[ object expect ];
 
 	test_hash_method $title => (
-		method => 'default',
+		method => q (default),
 		method_args => [],
 
 		object => $params{object} // shared->object,
@@ -82,8 +82,8 @@ example expect_build_args => as {
 	Hash::Util::lock_keys %params, qw[ object expect with_deduced];
 
 	test_list_method $title => (
-		method => 'build_callback_args',
-		method_args => [ 'with_deduced' ],
+		method => q (build_callback_args),
+		method_args => [ q (with_deduced) ],
 
 		object => $params{object} // shared->object,
 		with_deduced => $params{with_deduced},
@@ -98,8 +98,8 @@ example expect_build => as {
 	my $object = $params{object} // shared->object;
 
 	test_method $title => (
-		method => 'build',
-		method_args => [ 'with_deduced' ],
+		method => q (build),
+		method_args => [ q (with_deduced) ],
 
 		object => $params{object} // shared->object,
 		with_deduced => $params{with_deduced},

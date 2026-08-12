@@ -1,6 +1,6 @@
 
 use v5.10;
-use feature 'state';
+use feature q (state);
 
 use strict;
 use warnings;
@@ -19,20 +19,20 @@ use Context::Singleton::Frame::Builder::Array;
 
 use namespace::clean;
 
-has 'cache'
-	=> is       => 'ro'
+has q (cache)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +{} }
 	;
 
-has 'triggers'
-	=> is       => 'ro'
+has q (triggers)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +{} }
 	;
 
-has 'plugins'
-	=> is       => 'ro'
+has q (plugins)
+	=> is       => q (ro)
 	=> init_arg => +undef
 	=> default  => sub { +{} }
 	;
@@ -40,13 +40,13 @@ has 'plugins'
 sub BUILD {
 	my ($db) = @_;
 
-	$db->contrive ('Class::Load', (
-		value => 'Class::Load',
+	$db->contrive (q (Class::Load), (
+		value => q (Class::Load),
 	));
 
-	$db->contrive ('class_loader', (
-		dep => [ 'Class::Load' ],
-		as  => sub { $_[0]->can ('load_class') },
+	$db->contrive (q (class_loader), (
+		dep => [ q (Class::Load) ],
+		as  => sub { $_[0]->can (q (load_class)) },
 	));
 }
 
@@ -61,8 +61,8 @@ sub contrive_class {
 	return if exists $db->cache->{$name};
 
 	$db->contrive ($name, (
-		dep => [ 'class_loader' ],
-		as => eval "sub { \$_[0]->(q[$name]) && q[$name] }",
+		dep => [ q (class_loader) ],
+		as => eval qq (sub { \$_[0]->(q[$name]) && q[$name] }),
 	));
 
 	return;
@@ -71,9 +71,9 @@ sub contrive_class {
 sub _guess_builder_class {
 	my ($db, $def) = @_;
 
-	return 'Context::Singleton::Frame::Builder::Value' if exists $def->{value};
-	return 'Context::Singleton::Frame::Builder::Hash'  if Ref::Util::is_hashref ($def->{dep});
-	return 'Context::Singleton::Frame::Builder::Array'
+	return q (Context::Singleton::Frame::Builder::Value) if exists $def->{value};
+	return q (Context::Singleton::Frame::Builder::Hash)  if Ref::Util::is_hashref ($def->{dep});
+	return q (Context::Singleton::Frame::Builder::Array)
 }
 
 sub contrive {
@@ -81,7 +81,7 @@ sub contrive {
 
 	if ($def{class}) {
 		$db->contrive_class ($def{class});
-		$def{builder} //= 'new';
+		$def{builder} //= q (new);
 	}
 
 	if ($def{class} // $def{deduce}) {

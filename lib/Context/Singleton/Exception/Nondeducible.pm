@@ -9,7 +9,7 @@ use Exception::Class ( __PACKAGE__ );
 sub new {
 	my ($self, $singleton) = @_;
 
-	$self->SUPER::new (error => "Cannot deduce: $singleton");
+	$self->SUPER::new (error => qq (Cannot deduce: $singleton));
 }
 
 1;

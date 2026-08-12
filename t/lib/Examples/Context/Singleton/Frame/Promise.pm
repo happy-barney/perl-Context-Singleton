@@ -44,17 +44,17 @@ BEGIN {
 
 		$params{expected} //= expect_true;
 
-		$title //= "shoud throw" if $params{throws};
-		$title //= "should ${\ (eq_deeply (0, $params{expected}) ? 'not ' : '') }be resolvable";
+		$title //= q (shoud throw) if $params{throws};
+		$title //= qq (should ${\ (eq_deeply (0, $params{expected}) ? 'not ' : '') }be resolvable);
 
 		my $got;
 		my $lives_ok = eval { $got = $params{object}->is_resolvable; 1 };
 		my $error = $@;
 
-		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, '' }
+		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, q () }
 			if exists $params{throws};
 
-		return it "should not throw ($title)" => as { lives_ok { die $error } }
+		return it qq (should not throw ($title)) => as { lives_ok { die $error } }
 			unless $lives_ok;
 
 		it $title => as { cmp_deeply $got, $params{expected} };
@@ -66,7 +66,7 @@ BEGIN {
 
 	export expect_in_depth => as {
 		my $title = shift if @_ % 2;
-		$title //= 'should be resolvable in depth';
+		$title //= q (should be resolvable in depth);
 
 		my (%params) = @_;
 
@@ -76,10 +76,10 @@ BEGIN {
 		my $lives_ok = eval { $got = $params{object}->in_depth; 1 };
 		my $error = $@;
 
-		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, '' }
+		return it $title => as { throws_ok { die $error unless $lives_ok } $params{throws}, q () }
 			if exists $params{throws};
 
-		return it "should not throw ($title)" => as { lives_ok { die $error } }
+		return it qq (should not throw ($title)) => as { lives_ok { die $error } }
 			unless $lives_ok;
 
 		it $title => as { cmp_deeply $got, $params{expected} };
@@ -91,7 +91,7 @@ example argument_depth_should_be_mandatory => as {
 	Hash::Util::lock_keys %params, qw[ class arguments ];
 
 	it $title => as {
-		throws_ok { build_object %params } qr/Missing required arguments: depth/, '';
+		throws_ok { build_object %params } qr/Missing required arguments: depth/, q ();
 	};
 };
 
