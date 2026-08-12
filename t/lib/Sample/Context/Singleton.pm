@@ -23,7 +23,7 @@ sub import {
 
 	$globals->{into} //= scalar caller;
 	$globals->{load_path} //= [];
-    push @{ $globals->{load_path} }, 'Sample::Context::Singleton::001';
+	push @{ $globals->{load_path} }, 'Sample::Context::Singleton::001';
 
 	$class->SUPER::import ($globals, @params);
 }

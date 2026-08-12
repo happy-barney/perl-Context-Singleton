@@ -28,7 +28,7 @@ sub it_should_export {
 }
 
 sub it_should_know_about_rule {
-    my (%params) = @_;
+	my (%params) = @_;
 
 	Hash::Util::lock_keys %params,
 		qw[ db ],
@@ -36,11 +36,11 @@ sub it_should_know_about_rule {
 		qw[ singleton ],
 		;
 
-    my $db = $params{db};
+	my $db = $params{db};
 	$db //= $params{frame}->db if exists $params{frame};
 	$db //= Context::Singleton::Frame::DB->instance;
 
-    my $status = $db->search_builder_for ($params{singleton});
+	my $status = $db->search_builder_for ($params{singleton});
 
 	ok $status, "should know builder(s) for singleton $params{singleton}";
 };

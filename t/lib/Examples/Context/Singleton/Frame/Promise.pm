@@ -100,7 +100,7 @@ example new_promise_should_not_be_resolved_nor_resolvable => as {
 	Hash::Util::lock_keys %params, qw[ object class arguments ];
 
 	augment_arguments %params, depth => 4;
-    $params{object} //= build_object %params;
+	$params{object} //= build_object %params;
 
 	it $title => as {
 		my $is_resolvable = $params{object}->is_deducible;

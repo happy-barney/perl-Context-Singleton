@@ -127,9 +127,9 @@ sub init {
 }
 
 sub descend {
-    my ($self, $got) = @_;
-    my @got_val = @$got;
-    my $got_this = shift @got_val if @got_val % 2;
+	my ($self, $got) = @_;
+	my @got_val = @$got;
+	my $got_this = shift @got_val if @got_val % 2;
 
 	my ($ok, $stack) = (1);
 	($ok, $stack) = Test::Deep::descend ($got_this, $self->{cmp_this})

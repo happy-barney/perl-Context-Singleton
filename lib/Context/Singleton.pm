@@ -55,12 +55,12 @@ sub _exporter_expand_sub {
 }
 
 sub _exporter_validate_opts {
-   my ($class, $globals) = @_;
+	my ($class, $globals) = @_;
 
-   $class->SUPER::_exporter_validate_opts(@_);
+	$class->SUPER::_exporter_validate_opts(@_);
 
-   _exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
-	   if $globals->{load_path};
+	_exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
+		if $globals->{load_path};
 }
 
 1;
