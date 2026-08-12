@@ -167,11 +167,9 @@ sub deduce {
 }
 
 sub frame {
-	my ($frame, $code) = @_;
+	my ($frame, $code) = (&_effective_frame, @_);
 
-	my $slot = $frame->_localisable_current_frame;
-
-	local $slot->[0] = $slot->[0]->build_frame;
+	local $frame->_localisable_current_frame->[0] = $frame->build_frame;
 
 	$code->();
 }
