@@ -10,6 +10,7 @@ requires "Module::Pluggable::Object" => "0";
 requires "Moo" => "0";
 requires "Ref::Util" => "0";
 requires "Scalar::Util" => "0";
+requires "constant" => "0";
 requires "feature" => "0";
 requires "namespace::clean" => "0";
 requires "overload" => "0";

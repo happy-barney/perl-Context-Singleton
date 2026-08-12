@@ -10,6 +10,8 @@ use parent q (Exporter::Tiny);
 
 use Context::Singleton::Frame;
 
+use constant DEFAULT_FRAME_CLASS => Context::Singleton::Frame::;
+
 our @EXPORT = (
 	qw[ contrive        ],
 	qw[ contrive_class  ],
@@ -24,8 +26,8 @@ our @EXPORT = (
 );
 
 sub _exported_accessors {
-	my ($globals) = @_;
-	my $frame_class = $globals->{frame_class} // q (Context::Singleton::Frame);
+	my ($class, $globals) = @_;
+	my $frame_class = $globals->{frame_class} // $class->DEFAULT_FRAME_CLASS;
 
 	state %cache;
 
@@ -46,18 +48,20 @@ sub _exported_accessors {
 sub _exporter_expand_sub {
 	my ($class, $name, $args, $globals) = @_;
 
-	return $name => _exported_accessors ($globals)->{$name};
+	return $name => _exported_accessors ($class, $globals)->{$name};
 }
 
 sub _exporter_validate_opts {
 	my ($class, $globals) = @_;
 
-	$class->SUPER::_exporter_validate_opts(@_);
+	$class->SUPER::_exporter_validate_opts (@_);
 
-	_exported_accessors ($globals)->{load_rules}->(@{ $globals->{load_path} // [] })
+	_exported_accessors ($class, $globals)->{load_rules}->(@{ $globals->{load_path} })
 		if $globals->{load_path}
 		;
 }
+
+__PACKAGE__->import;
 
 1;
 
@@ -283,6 +287,29 @@ Passed as a list of named parameters to the builder function.
 	contrive_class q (Class::Name);
 
 Setup autoload mechanism same as when using C<contrive> with C<class>.
+
+=head1 SUBCLASSING
+
+	package My::Context::Singleton;
+	use parent q (Context::Singleton);
+
+	use My::Frame;
+	use constant DEFAULT_FRAME_CLASS => My::Frame::;
+
+	__PACKAGE__->import;
+
+A subclass of L<Context::Singleton> can declare a C<DEFAULT_FRAME_CLASS> constant
+to specify which L<Context::Singleton::Frame> (sub)class its exported functions
+operate on, without requiring every caller to pass C<frame_class> explicitly.
+
+C<frame_class> passed at C<use> time still takes precedence over
+C<DEFAULT_FRAME_CLASS>:
+
+	use My::Context::Singleton;                                     # uses My::Frame
+	use My::Context::Singleton { frame_class => q (Other::Frame) }; # uses Other::Frame
+
+See L<Context::Singleton::Frame/EXTENDING FRAME> for how to implement a custom
+frame class.
 
 =head1 TUTORIAL
 

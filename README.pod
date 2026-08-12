@@ -219,6 +219,29 @@ Passed as a list of named parameters to the builder function.
 
 Setup autoload mechanism same as when using C<contrive> with C<class>.
 
+=head1 SUBCLASSING
+
+	package My::Context::Singleton;
+	use parent q (Context::Singleton);
+
+	use My::Frame;
+	use constant DEFAULT_FRAME_CLASS => My::Frame::;
+
+	__PACKAGE__->import;
+
+A subclass of L<Context::Singleton> can declare a C<DEFAULT_FRAME_CLASS> constant
+to specify which L<Context::Singleton::Frame> (sub)class its exported functions
+operate on, without requiring every caller to pass C<frame_class> explicitly.
+
+C<frame_class> passed at C<use> time still takes precedence over
+C<DEFAULT_FRAME_CLASS>:
+
+	use My::Context::Singleton;                                     # uses My::Frame
+	use My::Context::Singleton { frame_class => q (Other::Frame) }; # uses Other::Frame
+
+See L<Context::Singleton::Frame/EXTENDING FRAME> for how to implement a custom
+frame class.
+
 =head1 TUTORIAL
 
 See short tutorial L<Context::Singleton::Tutorial>

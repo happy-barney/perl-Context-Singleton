@@ -32,6 +32,7 @@ my %module_build_args = (
     "Moo" => 0,
     "Ref::Util" => 0,
     "Scalar::Util" => 0,
+    "constant" => 0,
     "feature" => 0,
     "namespace::clean" => 0,
     "overload" => 0,
