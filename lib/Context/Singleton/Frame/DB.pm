@@ -19,22 +19,22 @@ use Context::Singleton::Frame::Builder::Array;
 
 use namespace::clean;
 
-has q (cache)
-	=> is       => q (ro)
-	=> init_arg => +undef
+has cache
+	=> is       => ro
 	=> default  => sub { +{} }
+	=> init_arg => undef
 	;
 
-has q (triggers)
-	=> is       => q (ro)
-	=> init_arg => +undef
+has plugins
+	=> is       => ro
 	=> default  => sub { +{} }
+	=> init_arg => undef
 	;
 
-has q (plugins)
-	=> is       => q (ro)
-	=> init_arg => +undef
+has triggers
+	=> is       => ro
 	=> default  => sub { +{} }
+	=> init_arg => undef
 	;
 
 sub BUILD {
@@ -48,26 +48,6 @@ sub BUILD {
 		dep => [ q (Class::Load) ],
 		as  => sub { $_[0]->can (q (load_class)) },
 	));
-}
-
-sub instance {
-	state $instance = __PACKAGE__->new;
-	return $instance;
-}
-
-sub contrive_class {
-	my ($db, $name) = @_;
-
-	return
-		if exists $db->cache->{$name}
-		;
-
-	$db->contrive ($name, (
-		dep => [ q (class_loader) ],
-		as => eval qq (sub { \$_[0]->(q[$name]) && q[$name] }),
-	));
-
-	return;
 }
 
 sub _guess_builder_class {
@@ -104,10 +84,38 @@ sub contrive {
 	return;
 }
 
-sub trigger {
-	my ($db, $name, $code) = @_;
+sub contrive_class {
+	my ($db, $name) = @_;
 
-	push @{ $db->triggers->{ $name } }, $code;
+	return
+		if exists $db->cache->{$name}
+		;
+
+	$db->contrive ($name, (
+		dep => [ q (class_loader) ],
+		as => eval qq (sub { \$_[0]->(q[$name]) && q[$name] }),
+	));
+
+	return;
+}
+
+sub instance {
+	state $instance = __PACKAGE__->new;
+	return $instance;
+}
+
+sub load_rules {
+	my ($db, @packages) = @_;
+
+	for my $package (@packages) {
+		$db->plugins->{ $package } //= do {
+			Module::Pluggable::Object->new (
+				require => 1,
+				search_path => [ $package ],
+			)->plugins;
+			1;
+		};
+	}
 
 	return;
 }
@@ -124,18 +132,10 @@ sub search_trigger_for {
 	return @{ $db->triggers->{ $name } // [] };
 }
 
-sub load_rules {
-	my ($db, @packages) = @_;
+sub trigger {
+	my ($db, $name, $code) = @_;
 
-	for my $package (@packages) {
-		$db->plugins->{ $package } //= do {
-			Module::Pluggable::Object->new (
-				require => 1,
-				search_path => [ $package ],
-			)->plugins;
-			1;
-		};
-	}
+	push @{ $db->triggers->{ $name } }, $code;
 
 	return;
 }
