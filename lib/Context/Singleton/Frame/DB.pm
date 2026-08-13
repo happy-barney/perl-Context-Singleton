@@ -13,9 +13,7 @@ use Class::Load;
 use Module::Pluggable::Object;
 use Ref::Util;
 
-use Context::Singleton::Frame::Builder::Value;
-use Context::Singleton::Frame::Builder::Hash;
-use Context::Singleton::Frame::Builder::Array;
+use Context::Singleton::Singleton;
 
 use namespace::clean;
 
@@ -26,12 +24,6 @@ has cache
 	;
 
 has plugins
-	=> is       => ro
-	=> default  => sub { +{} }
-	=> init_arg => undef
-	;
-
-has triggers
 	=> is       => ro
 	=> default  => sub { +{} }
 	=> init_arg => undef
@@ -50,22 +42,23 @@ sub BUILD {
 	));
 }
 
-sub _build_builder {
-	my ($db, $def) = @_;
+sub _ensure_singleton {
+	my ($db, $name) = @_;
+	my $lookup_key = $db->_lookup_key ($name);
 
-	$db->_guess_builder_class ($def)->new (%$def);
+	return $db->cache->{$lookup_key} //= Context::Singleton::Singleton::->new (singleton => $name);
 }
 
-sub _guess_builder_class {
-	my ($db, $def) = @_;
+sub _lookup_key {
+	my ($db, $name) = @_;
 
-	return q (Context::Singleton::Frame::Builder::Value)
-		if exists $def->{value}
-		;
-	return q (Context::Singleton::Frame::Builder::Hash)
-		if Ref::Util::is_hashref ($def->{dep})
-		;
-	return q (Context::Singleton::Frame::Builder::Array)
+	return $name;
+}
+
+sub _search_singleton {
+	my ($db, $name) = @_;
+
+	return $db->cache->{ $db->_lookup_key ($name) };
 }
 
 sub contrive {
@@ -82,9 +75,7 @@ sub contrive {
 		delete $def{deduce};
 	}
 
-	my $builder = $db->_build_builder (\ %def);
-
-	push @{ $db->cache->{ $name } }, $builder;
+	$db->_ensure_singleton ($name)->add_builder (\ %def);
 
 	return;
 }
@@ -93,7 +84,7 @@ sub contrive_class {
 	my ($db, $name) = @_;
 
 	return
-		if exists $db->cache->{$name}
+		if $db->_search_singleton ($name)
 		;
 
 	$db->contrive ($name, (
@@ -128,19 +119,27 @@ sub load_rules {
 sub search_builder_for {
 	my ($db, $name) = @_;
 
-	return @{ $db->cache->{ $name } // [] };
+	return
+		unless my $singleton = $db->_search_singleton ($name)
+		;
+
+	return $singleton->builders;
 }
 
 sub search_trigger_for {
 	my ($db, $name) = @_;
 
-	return @{ $db->triggers->{ $name } // [] };
+	return
+		unless my $singleton = $db->_search_singleton ($name)
+		;
+
+	return $singleton->on_destroy;
 }
 
 sub trigger {
 	my ($db, $name, $code) = @_;
 
-	push @{ $db->triggers->{ $name } }, $code;
+	$db->_ensure_singleton ($name)->add_on_destroy ($code);
 
 	return;
 }
