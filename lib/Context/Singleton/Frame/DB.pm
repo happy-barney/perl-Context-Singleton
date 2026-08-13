@@ -50,6 +50,12 @@ sub BUILD {
 	));
 }
 
+sub _build_builder {
+	my ($db, $def) = @_;
+
+	$db->_guess_builder_class ($def)->new (%$def);
+}
+
 sub _guess_builder_class {
 	my ($db, $def) = @_;
 
@@ -76,8 +82,7 @@ sub contrive {
 		delete $def{deduce};
 	}
 
-	my $builder_class = $db->_guess_builder_class (\%def);
-	my $builder = $builder_class->new (%def);
+	my $builder = $db->_build_builder (\ %def);
 
 	push @{ $db->cache->{ $name } }, $builder;
 
