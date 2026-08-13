@@ -12,62 +12,110 @@ on:
     - cron: "0 16 * * 5" # Every Friday 16:00 UTC
 
 jobs:
-  build:
-    name: Build distribution
-    runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 1
-    container:
-      image: perldocker/perl-tester:latest
+  prepare-matrix:
+    name:               "List perl versions"
+    runs-on:            ubuntu-latest
+    outputs:
+      perl-versions:    ${{ steps.action.outputs.perl-versions }}
+      build-on-version: ${{ steps.action.outputs.single-out }}
     steps:
-      - uses: actions/checkout@v3
+      - id:             action
+        name:           "Perl versions action step"
+        uses:           perl-actions/perl-versions@main
         with:
-          fetch-depth: 0
-      - name: Build distribution
-        run: auto-build-and-test-dist
-      - uses: actions/upload-artifact@master
-        with:
-          name: build_dir
-          path: build_dir
+          since-perl:   '5.10'
+          single-out:   'newest'
+          with-devel:   'false'
 
-  test-on-linux:
-    runs-on: ${{ matrix.os }}
-    name: "Perl ${{ matrix.perl-version }} on ${{ matrix.os }}"
-    needs: build
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - "ubuntu-latest"
-        perl-version:
-          - "5.10"
-          - "5.12"
-          - "5.14"
-          - "5.16"
-          - "5.18"
-          - "5.20"
-          - "5.22"
-          - "5.24"
-          - "5.28"
-          - "5.30"
-          - "5.32"
-          - "5.34"
+  build:
+    name:               "Build distribution"
+    runs-on:            ubuntu-latest
+    needs:
+      - prepare-matrix
     container:
-      image: perldocker/perl-tester:${{ matrix.perl-version }}
+      image:            perldocker/perl-tester:${{ needs.prepare-matrix.outputs.build-on-version }}
     steps:
-      - uses: actions/download-artifact@master
+      - name:           "Checkout"
+        uses:           actions/checkout@v7
         with:
-          name: build_dir
-          path: .
-      - name: Install dependencies
-        if: success()
-        run: cpanm --quiet --installdeps --notest .
-      - name: Run Tests
-        if: success()
-        run: prove --lib --jobs $(nproc --all) --state save t
-      - uses: actions/upload-artifact@master
-        if: failure()
+          fetch-depth:  0
+
+      - name:           "Build distribution"
+        if:             success ()
+        run:            auto-build-and-test-dist
+
+      - name:           "Build distribution artifact"
+        if:             success ()
+        run:            tar cfz build_dir.tar.gz build_dir
+
+      - name:           "Install distribution dependencies"
+        if:             success ()
+        run:            "cpanm --installdeps . --notest"
+
+      - name:           "Run distribution tests"
+        if:             success ()
+        run:            prove -lr --jobs $(nproc) --state save t
+
+      - name:           "Publish .prove"
+        uses:           actions/upload-artifact@main
         with:
-          name: .prove
-          path: .prove
+          name:         .prove-${{ needs.prepare-matrix.outputs.build-on-version }}
+          path:         .prove
+
+      - name:           "Upload distribution artifact"
+        if:             success ()
+        uses:           actions/upload-artifact@master
+        with:
+          name:         build_dir.tar.gz
+          path:         build_dir.tar.gz
+
+  test-on-perl-tester:
+    name:               "Test with Perl ${{ matrix.perl-version }} on perldocker/perl-tester"
+    runs-on:            ubuntu-latest
+    needs:
+      - build
+      - prepare-matrix
+    strategy:
+      fail-fast:        false
+      matrix:
+        perl-version:   ${{ fromJson (needs.prepare-matrix.outputs.perl-versions) }}
+        exclude:
+          - perl-version: ${{ needs.prepare-matrix.outputs.build-on-version }}
+    container:
+      image:            perldocker/perl-tester:${{ matrix.perl-version }}
+    steps:
+      - name:           "Download artifact"
+        uses:           actions/download-artifact@master
+        with:
+          name:         build_dir.tar.gz
+
+      - name:           "Unpack distribution"
+        if:             success ()
+        run:            tar -xf build_dir.tar.gz --strip-components=1
+
+      - name:           "Install dependencies"
+        if:             success ()
+        run:            "cpanm --installdeps . --notest"
+
+      - name:           "Run distribution tests"
+        if:             success ()
+        run:            prove -lr --jobs $(nproc) --state save t
+
+      - uses:           actions/upload-artifact@v7
+        with:
+          name:         .prove-${{ matrix.perl-version}}
+          path:         .prove
+
+  cleanup:
+    name:               "Cleanup distribution artifact"
+    runs-on:            ubuntu-latest
+    needs:
+      - test-on-perl-tester
+    if:                 success ()
+
+    steps:
+      - uses:           geekyeggo/delete-artifact@v6
+        with:
+          name:         build_dir.tar.gz
+
 
